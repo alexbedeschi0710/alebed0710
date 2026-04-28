@@ -1,0 +1,200 @@
+<?php
+/**
+ * PadelZero - Bottom Navigation
+ *
+ * Shortcode: [pz_bottom_nav]
+ *
+ * Barra di navigazione fissa in basso, stile mobile-app, con 4 icone:
+ *   • Home          → wizard / pagina iniziale
+ *   • Prenotazioni  → pagina "le mie prenotazioni"
+ *   • Wallet        → borsellino
+ *   • Account       → profilo utente
+ *
+ * Va inserito su tutte le pagine del flusso (wizard, booking privato,
+ * lobby, ecc.) — più comodo: dentro un widget Elementor "Shortcode"
+ * sul template footer del sito, oppure pagina-per-pagina.
+ *
+ * Le rotte sono configurate in alto, modificabili senza toccare il resto.
+ */
+
+if (!defined('ABSPATH')) exit;
+
+/* ============================================================
+ *  CONFIG  ── slug delle pagine collegate dal nav
+ * ============================================================ */
+function pz_nav_routes() {
+    return [
+        'home'          => '/inizio/',
+        'prenotazioni'  => '/inizio/le-mie-prenotazioni/',
+        'wallet'        => '/inizio/borsellino/',
+        'account'       => '/inizio/account/',
+    ];
+}
+
+
+add_shortcode('pz_bottom_nav', 'pz_nav_render');
+
+function pz_nav_render($atts) {
+    if (!is_user_logged_in()) return '';   // niente nav per visitatori
+
+    $routes = pz_nav_routes();
+    $home   = home_url('/');
+
+    // Prende lo slug della pagina corrente (es. "le-mie-prenotazioni")
+    // Gestisce anche query string e trailing slash
+    $req_path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+    $req_path = '/' . trim($req_path, '/') . '/'; // normalizza: /slug/
+
+    // Confronto esatto: l'URI deve contenere esattamente lo slug della rotta
+    $active = '';
+    foreach ($routes as $key => $slug) {
+        // Normalizza lo slug: /inizio/ → /inizio/
+        $normalized = '/' . trim($slug, '/') . '/';
+        if ($normalized !== '//' && $req_path === $normalized) {
+            $active = $key;
+            break;
+        }
+    }
+    // Fallback home se siamo sulla root
+    if (!$active && ($req_path === '//' || $req_path === '/')) $active = 'home';
+
+    $url = function($slug) use ($home) {
+        return rtrim($home, '/') . $slug;
+    };
+
+    ob_start();
+    ?>
+    <style>
+    /* ===== Bottom nav: blindato con !important contro tema ===== */
+    .pz-nav{
+      position:fixed !important;
+      bottom:0 !important;left:0 !important;right:0 !important;
+      width:100% !important;
+      background:#FFFFFF !important;
+      border-top:1px solid #ECEEF2 !important;
+      box-shadow:0 -4px 12px -6px rgba(22,27,46,.08) !important;
+      z-index:100 !important;
+      padding:0 !important;
+      box-sizing:border-box !important;
+      font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif !important;
+    }
+    .pz-nav-inner{
+      display:flex !important;
+      max-width:480px !important;
+      margin:0 auto !important;
+      height:64px !important;
+    }
+    .pz-nav a{
+      flex:1 !important;
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:3px !important;
+      text-decoration:none !important;
+      color:#8B92A5 !important;
+      background:transparent !important;
+      border:none !important;
+      padding:8px 4px !important;
+      transition:color .15s ease !important;
+      box-shadow:none !important;
+      border-radius:0 !important;
+    }
+    .pz-nav a:hover{color:#161B2E !important;background:transparent !important}
+    .pz-nav a.is-active{color:#1FB856 !important}
+    .pz-nav a svg{
+      width:22px !important;height:22px !important;
+      stroke:currentColor !important;stroke-width:2 !important;fill:none !important;
+      stroke-linecap:round !important;stroke-linejoin:round !important;
+    }
+    .pz-nav-label{
+      font-size:11px !important;
+      font-weight:600 !important;
+      letter-spacing:0 !important;
+      line-height:1 !important;
+      text-transform:none !important;
+    }
+    </style>
+
+    <nav class="pz-nav" aria-label="Menu principale">
+      <div class="pz-nav-inner">
+
+        <a href="<?php echo esc_url($url($routes['home'])); ?>" class="<?php echo $active === 'home' ? 'is-active' : ''; ?>">
+          <svg viewBox="0 0 24 24"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V9.5z"/></svg>
+          <span class="pz-nav-label">Home</span>
+        </a>
+
+        <a href="<?php echo esc_url($url($routes['prenotazioni'])); ?>" class="<?php echo $active === 'prenotazioni' ? 'is-active' : ''; ?>">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>
+          <span class="pz-nav-label">Prenotazioni</span>
+        </a>
+
+        <!-- Icona installa PWA -->
+        <a href="#" onclick="event.preventDefault();pzOpenPwaSheet();" class="">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <path d="M9 9l3 3 3-3"/>
+            <line x1="12" y1="7" x2="12" y2="12"/>
+          </svg>
+          <span class="pz-nav-label">App</span>
+        </a>
+
+        <a href="<?php echo esc_url($url($routes['account'])); ?>" class="<?php echo $active === 'account' ? 'is-active' : ''; ?>">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="pz-nav-label">Account</span>
+        </a>
+
+      </div>
+    </nav>
+    <?php
+    return ob_get_clean();
+}
+
+
+/* ============================================================
+ *  AUTO-INJECT — inietta automaticamente il nav in footer
+ *  per tutte le pagine che contengono shortcode del plugin.
+ *  Così l'utente non deve metterlo manualmente ovunque.
+ * ============================================================ */
+add_action('wp_footer', 'pz_nav_auto_inject', 5);
+
+function pz_nav_auto_inject() {
+    if (!is_user_logged_in() || !is_singular()) return;
+
+    global $post;
+    if (!$post) return;
+
+    // Evita doppio rendering se lo shortcode è già in pagina
+    if (has_shortcode($post->post_content, 'pz_bottom_nav')) return;
+
+    $triggers = [
+        'pz_wizard',
+        'pz_book_private',
+        'pz_create_public',
+        'pz_my_bookings',
+        'pzlobby',
+        'pz_wallet_balance',
+        'pz_rating_setup',
+    ];
+
+    // 1) Check nel post_content standard
+    $found = false;
+    foreach ($triggers as $sc) {
+        if (has_shortcode($post->post_content, $sc)) { $found = true; break; }
+    }
+
+    // 2) Elementor salva il contenuto in _elementor_data (JSON) — post_content è quasi vuoto
+    if (!$found) {
+        $el_data = get_post_meta($post->ID, '_elementor_data', true);
+        if ($el_data) {
+            foreach ($triggers as $sc) {
+                if (strpos($el_data, $sc) !== false) { $found = true; break; }
+            }
+        }
+    }
+
+    if (!$found) return;
+
+    echo do_shortcode('[pz_bottom_nav]');
+}
+

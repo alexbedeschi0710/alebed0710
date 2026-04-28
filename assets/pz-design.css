@@ -1,0 +1,204 @@
+/* ============================================================
+   PadelZero - Design System condiviso
+   File: assets/pz-design.css
+   Tutti i widget del plugin usano queste variabili & classi base.
+   ============================================================ */
+
+/* ---------- VARIABILI GLOBALI ---------- */
+.pz-app{
+  --pz-green:        #1FB856;
+  --pz-green-dark:   #15994A;
+  --pz-green-soft:   #E8F8EE;
+  --pz-ink:          #161B2E;
+  --pz-ink-soft:     #2A3147;
+  --pz-muted:        #8B92A5;
+  --pz-line:         #ECEEF2;
+  --pz-line-strong:  #D9DCE3;
+  --pz-bg:           #F4F5F8;
+  --pz-white:        #FFFFFF;
+  --pz-warn-bg:      #FEF3C7;
+  --pz-warn-fg:      #92400E;
+  --pz-err-bg:       #FEE2E2;
+  --pz-err-fg:       #991B1B;
+  --pz-radius-lg:    20px;
+  --pz-radius-md:    14px;
+  --pz-radius-sm:    10px;
+  --pz-shadow-card:  0 8px 30px -12px rgba(22,27,46,.10);
+  --pz-shadow-cta:   0 10px 24px -8px rgba(31,184,86,.55);
+
+  font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  color:var(--pz-ink);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.pz-app *,
+.pz-app *::before,
+.pz-app *::after{box-sizing:border-box}
+
+/* ---------- LAYOUT ROOT ---------- */
+.pz-wrap{
+  max-width:480px;
+  margin:0 auto;
+  padding:20px 18px 130px;
+  position:relative;
+}
+
+/* ---------- HEADER ---------- */
+.pz-header{
+  display:flex;align-items:center;
+  position:relative;
+  min-height:44px;
+  margin-bottom:14px;
+}
+.pz-back{
+  width:44px !important;height:44px !important;
+  background:#FFFFFF !important;
+  border:1.5px solid #D9DCE3 !important;
+  border-radius:50% !important;
+  display:flex !important;align-items:center !important;justify-content:center !important;
+  cursor:pointer !important;
+  transition:background .15s ease,border-color .15s ease !important;
+  box-shadow:none !important;padding:0 !important;flex-shrink:0 !important;
+  position:relative;z-index:1;
+}
+.pz-back svg{
+  stroke:#8B92A5 !important;
+  width:18px !important;height:18px !important;
+}
+.pz-back:hover{
+  background:#F4F5F8 !important;
+  border-color:#8B92A5 !important;
+}
+.pz-back.is-hidden{visibility:hidden !important;pointer-events:none !important}
+.pz-title{
+  position:absolute;left:0;right:0;
+  font-size:19px;font-weight:700;letter-spacing:-0.02em;
+  text-align:center;pointer-events:none;margin:0;
+}
+.pz-subtitle{
+  font-size:14px;color:var(--pz-muted);line-height:1.5;
+  margin:0 0 22px;padding:0 4px;
+}
+
+/* ---------- CARD ---------- */
+.pz-card{
+  background:var(--pz-white);border-radius:var(--pz-radius-lg);
+  padding:22px 18px 14px;box-shadow:var(--pz-shadow-card);
+  animation:pz-fade-up .4s ease both;
+}
+@keyframes pz-fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---------- SEZIONI ---------- */
+.pz-section{margin-bottom:24px}
+.pz-section:last-child{margin-bottom:8px}
+.pz-section-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.pz-section-head svg{
+  width:18px;height:18px;stroke:var(--pz-ink);
+  stroke-width:2;fill:none;flex-shrink:0;
+}
+.pz-section-label{font-size:15px;font-weight:700;letter-spacing:-0.01em}
+
+/* ---------- CTA STICKY BOTTOM ---------- */
+.pz-cta-wrap{
+  position:fixed;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,var(--pz-bg) 60%,rgba(244,245,248,0));
+  padding:18px 18px 22px;z-index:99;
+}
+.pz-cta-inner{max-width:480px;margin:0 auto}
+.pz-cta{
+  width:100%;border:none;background:var(--pz-green);color:var(--pz-white);
+  font-family:inherit;font-size:15px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:17px;border-radius:var(--pz-radius-md);
+  cursor:pointer;transition:all .2s;box-shadow:var(--pz-shadow-cta);
+}
+.pz-cta:hover:not(:disabled){background:var(--pz-green-dark);transform:translateY(-1px)}
+.pz-cta:disabled{background:#D5D8DE;color:#9097A5;cursor:not-allowed;box-shadow:none}
+
+/* ---------- LOADING & ERROR ---------- */
+.pz-loading{
+  text-align:center;color:var(--pz-muted);
+  padding:30px 0;font-size:13px;font-weight:500;
+}
+.pz-loading::before{
+  content:"";display:inline-block;width:14px;height:14px;
+  border:2px solid var(--pz-line-strong);border-top-color:var(--pz-green);
+  border-radius:50%;animation:pz-spin .7s linear infinite;
+  vertical-align:middle;margin-right:8px;
+}
+@keyframes pz-spin{to{transform:rotate(360deg)}}
+
+.pz-error-inline{
+  background:var(--pz-err-bg);color:var(--pz-err-fg);
+  border-radius:var(--pz-radius-sm);padding:10px 14px;
+  font-size:13px;font-weight:500;margin-top:12px;display:none;
+}
+.pz-error-inline.is-visible{display:block}
+
+/* ---------- LOGIN WALL ---------- */
+.pz-login-wall{
+  max-width:480px;margin:30px auto;padding:24px;
+  background:var(--pz-warn-bg);border:1px solid #ffc107;
+  border-radius:var(--pz-radius-md);text-align:center;
+  font-family:'DM Sans',sans-serif;color:var(--pz-warn-fg);
+}
+.pz-login-wall a{color:var(--pz-warn-fg);font-weight:700}
+
+/* ---------- CHOICE CARDS (riusabile per wizard / scelte) ---------- */
+.pz-choices{display:flex;flex-direction:column;gap:12px}
+.pz-choice{
+  display:flex;align-items:center;gap:14px;
+  background:var(--pz-white);border:1.5px solid var(--pz-line-strong);
+  border-radius:var(--pz-radius-md);padding:18px 16px;
+  cursor:pointer;transition:all .18s ease;text-align:left;
+  font-family:inherit;width:100%;
+}
+.pz-choice:hover{border-color:var(--pz-ink);transform:translateY(-1px)}
+.pz-choice.is-disabled{opacity:.5;cursor:not-allowed}
+.pz-choice.is-disabled:hover{transform:none;border-color:var(--pz-line-strong)}
+.pz-choice-icon{
+  flex-shrink:0;width:48px;height:48px;border-radius:12px;
+  background:var(--pz-green-soft);display:flex;align-items:center;justify-content:center;
+}
+.pz-choice-icon svg{width:24px;height:24px;stroke:var(--pz-green);stroke-width:2;fill:none}
+.pz-choice-body{flex:1;min-width:0}
+.pz-choice-title{
+  font-size:15px;font-weight:700;color:var(--pz-ink);
+  letter-spacing:-0.01em;margin:0 0 3px;
+}
+.pz-choice-desc{font-size:13px;color:var(--pz-muted);line-height:1.4;margin:0}
+.pz-choice-arrow{
+  flex-shrink:0;color:var(--pz-muted);
+  transition:transform .18s ease,color .18s ease;
+}
+.pz-choice:hover .pz-choice-arrow{color:var(--pz-ink);transform:translateX(2px)}
+
+/* ---------- SUCCESS OVERLAY ---------- */
+.pz-success-overlay{
+  position:fixed;inset:0;background:rgba(22,27,46,.55);z-index:999;
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+.pz-success-overlay.is-open{display:flex}
+.pz-success-card{
+  background:#fff;border-radius:var(--pz-radius-lg);max-width:380px;width:100%;
+  padding:34px 26px 26px;text-align:center;animation:pz-fade-up .3s ease both;
+}
+.pz-success-icon{
+  width:64px;height:64px;border-radius:50%;background:var(--pz-green-soft);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 18px;
+}
+.pz-success-icon svg{width:32px;height:32px;stroke:var(--pz-green);stroke-width:3;fill:none}
+.pz-success-title{font-size:20px;font-weight:700;margin:0 0 8px}
+.pz-success-msg{font-size:14px;color:var(--pz-muted);line-height:1.5;margin:0 0 18px}
+.pz-success-detail{
+  background:var(--pz-bg);border-radius:var(--pz-radius-md);padding:14px;
+  font-size:13.5px;font-weight:600;margin-bottom:18px;
+}
+.pz-success-tag{
+  display:inline-block;background:var(--pz-warn-bg);color:var(--pz-warn-fg);
+  font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  padding:4px 10px;border-radius:6px;margin-bottom:12px;
+}
+
+/* ---------- FONT IMPORT ---------- */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
