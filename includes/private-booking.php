@@ -47,9 +47,7 @@ add_shortcode('pz_book_private', 'pz_pb_render');
 function pz_pb_render($atts) {
 
     if (!is_user_logged_in()) {
-        return '<div class="pz-pb-login-wall">'
-             . 'Per prenotare devi <a href="' . esc_url(wp_login_url(get_permalink())) . '">accedere</a>.'
-             . '</div>';
+        return pz_render_login_wall('', 'Accedi per prenotare', 'Per prenotare una partita privata devi prima effettuare il login.', 'login/');
     }
 
     $courts        = pz_pb_courts();
@@ -848,4 +846,3 @@ function pz_pb_ajax_book() {
         'payment'        => 'onsite',
     ]);
 }
-
