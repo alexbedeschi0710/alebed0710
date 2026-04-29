@@ -99,22 +99,15 @@ function pz_top_bar_render( $atts = [] ) {
     .pz-top-bar-logo {
         display: flex !important;
         align-items: center !important;
-        gap: 7px !important;
         text-decoration: none !important;
     }
-    .pz-top-bar-logo svg {
-        width: 28px !important;
-        height: 28px !important;
+    .pz-top-bar-logo img {
+        height: 32px !important;
+        width: auto !important;
+        max-width: 160px !important;
+        display: block !important;
         flex-shrink: 0 !important;
     }
-    .pz-top-bar-logo-text {
-        font-size: 17px !important;
-        font-weight: 800 !important;
-        color: #161B2E !important;
-        letter-spacing: -0.03em !important;
-        line-height: 1 !important;
-    }
-    .pz-top-bar-logo-text span { color: #1FB856 !important; }
     .pz-top-bar-back {
         display: flex !important;
         align-items: center !important;
@@ -212,12 +205,13 @@ function pz_top_bar_render( $atts = [] ) {
                     </a>
                 <?php else : ?>
                     <a href="<?php echo esc_url( pz_app_url() ); ?>" class="pz-top-bar-logo" aria-label="PadelZero Home">
-                        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <rect width="32" height="32" rx="8" fill="#1FB856"/>
-                            <path d="M8 22 C8 22 10 10 16 10 C20 10 22 13 20 17 C18 21 13 21 11 18" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                            <circle cx="21" cy="21" r="2.5" fill="#fff"/>
-                        </svg>
-                        <span class="pz-top-bar-logo-text">Padel<span>Zero</span></span>
+                        <img
+                            src="https://padelzero.it/wp-content/uploads/2026/04/Padelzero-Logo_1.svg"
+                            alt="PadelZero"
+                            width="120"
+                            height="32"
+                            loading="eager"
+                        >
                     </a>
                 <?php endif; ?>
             </div>
