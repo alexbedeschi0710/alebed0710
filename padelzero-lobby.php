@@ -41,6 +41,7 @@ require_once PZ_PLUGIN_DIR . 'includes/private-booking.php';
 require_once PZ_PLUGIN_DIR . 'includes/public-booking.php';
 require_once PZ_PLUGIN_DIR . 'includes/my-bookings.php';
 require_once PZ_PLUGIN_DIR . 'includes/bottom-nav.php';
+require_once PZ_PLUGIN_DIR . 'includes/top-bar.php';
 
 // ─── 5. Pagamenti e admin ─────────────────────────────────────────────────
 require_once PZ_PLUGIN_DIR . 'includes/ajax-handlers.php';
@@ -64,4 +65,3 @@ register_deactivation_hook(__FILE__, 'pz_deactivate_plugin');
 function pz_deactivate_plugin() {
     flush_rewrite_rules();
 }
-
