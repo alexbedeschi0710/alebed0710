@@ -11,7 +11,12 @@ if (!defined('ABSPATH')) exit;
  *  ========================= */
 add_shortcode('pz_wallet_balance', function() {
     if (!is_user_logged_in()) {
-        return '<div style="padding:20px;background:#f8d7da;border-radius:12px;font-family:\'DM Sans\',-apple-system,sans-serif">❌ Effettua il login per vedere il tuo borsellino.</div>';
+        return pz_render_login_wall(
+            '💰',
+            'Il tuo borsellino',
+            'Accedi per visualizzare il tuo saldo e la cronologia dei movimenti.',
+            '/inizio/login/'
+        );
     }
 
     $user_id  = get_current_user_id();
@@ -115,8 +120,6 @@ add_shortcode('pzlobby', function($atts) {
             $booked     = (int)get_post_meta($id,   $k['booked_count'], true);
 
             if ($serviceId && !in_array($serviceId, PZ_PUBLIC_SERVICE_IDS, true)) continue;
-            // Filtra per livello: confronta la key interna (Principiante/Intermedio/Avanzato)
-            // ID 7 e 8 sono entrambi mappati su 'Avanzato', quindi il filtro funziona su $lvl
             if ($level !== '' && $lvl !== $level) continue;
 
             $dt   = pz_dt_from_meta($startsDate, $startsTime);
@@ -194,15 +197,11 @@ add_shortcode('pzlobby', function($atts) {
     }
 
     // ── Dati filtri ──────────────────────────────────────────────────────────
-    // Mappa service ID → fascia di rating
-    // ID 1       → 1.0 – 2.5  (Principiante / Principiante+)
-    // ID 6       → 3.0 – 3.5  (Intermedio)
-    // ID 7, 8    → 4.0+        (Avanzato / Pro — fuse in un'unica fascia)
     $level_display = [
         'Principiante' => '1.0 – 2.5',
         'Intermedio'   => '3.0 – 3.5',
         'Avanzato'     => '4.0+',
-        'Pro'          => '4.0+',   // assorbito nella fascia Avanzato
+        'Pro'          => '4.0+',
     ];
 
     $levels = [
@@ -226,7 +225,7 @@ add_shortcode('pzlobby', function($atts) {
         'Principiante' => '#00cc44',
         'Intermedio'   => '#ffcc00',
         'Avanzato'     => '#ff7900',
-        'Pro'          => '#ff7900',  // stesso colore Avanzato
+        'Pro'          => '#ff7900',
     ];
 
     $user_wallet_balance = is_user_logged_in() ? pz_get_user_wallet_balance(get_current_user_id()) : 0;
@@ -250,7 +249,6 @@ add_shortcode('pzlobby', function($atts) {
 
     /* Custom select */
     .pz-lb-select{position:relative !important;flex:1 !important;min-width:0 !important;width:100% !important;}
-    /* Testo placeholder nel trigger */
     .pz-lb-placeholder{color:#8B92A5 !important;}
     .pz-lb-select-trigger{
         display:flex !important;align-items:center !important;gap:8px !important;
@@ -571,7 +569,6 @@ add_shortcode('pzlobby', function($atts) {
                 $dateLabel  = $dt ? $dt->format('d') . ' ' . $mesi[(int)$dt->format('n')] : $it['starts_date'];
                 $timeLabel  = $dt ? $dt->format('H:i') : substr($it['starts_time'], 0, 5);
                 $levelColor = $it['level_color'];
-                // Etichetta numerica: usa $level_display se disponibile
                 $levelKey   = $it['level'] ?: '';
                 $levelLabel = isset($level_display[$levelKey]) ? $level_display[$levelKey] : ($levelKey ?: '–');
                 $isFull     = ((int)$it['booked'] >= (int)$it['max']);
@@ -586,13 +583,12 @@ add_shortcode('pzlobby', function($atts) {
                 }
                 $price = (float)$service_prices[$sid];
 
-                // Giorno della settimana abbreviato
                 $giorni_short = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
                 $dayLabel = $dt ? $giorni_short[(int)$dt->format('w')] : '';
             ?>
             <div class="pz-lb-card">
 
-                <!-- Colonna sinistra: avatars uno sotto l'altro -->
+                <!-- Colonna sinistra: avatars -->
                 <div class="pz-lb-avatars-col">
                     <?php
                     $participants = $it['participants'];
@@ -652,7 +648,7 @@ add_shortcode('pzlobby', function($atts) {
                                 Partecipa
                             </button>
                         <?php else: ?>
-                            <a href="<?php echo esc_url(wp_login_url(get_permalink())); ?>" class="pz-lb-btn-login">Accedi</a>
+                            <a href="<?php echo esc_url(home_url('/inizio/login/')); ?>" class="pz-lb-btn-login">Accedi</a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -744,7 +740,6 @@ add_shortcode('pzlobby', function($atts) {
                     var val   = this.getAttribute('data-value');
                     var label = this.querySelector('span:last-child').textContent.trim();
 
-                    // aggiorna testo trigger + toglie/mette placeholder
                     text.textContent = label;
                     if (val === '') {
                         text.classList.add('pz-lb-placeholder');
@@ -753,7 +748,6 @@ add_shortcode('pzlobby', function($atts) {
                     }
                     if (hidden) hidden.value = val;
 
-                    // aggiorna dot nel trigger (solo livello)
                     if (name === 'pzlevel') {
                         var existDot = trigger.querySelector('.pz-lb-dot');
                         var newDot   = this.querySelector('.pz-lb-dot');
@@ -786,18 +780,15 @@ add_shortcode('pzlobby', function($atts) {
             var level      = $(this).data('level') || '';
             var date       = $(this).data('date')  || '';
 
-            // Aggiorna titolo/sub modal
             $('#pzLbModalTitle').text('Unisciti alla partita');
             $('#pzLbModalSub').text(level + ' · ' + date);
 
-            // Wallet: disabilita se saldo insufficiente
             if (walletBalance < selectedPrice || walletBalance <= 0) {
                 $('#pzLbOptWallet').addClass('disabled');
             } else {
                 $('#pzLbOptWallet').removeClass('disabled');
             }
 
-            // Reset selezione → onsite
             selectedMethod = 'onsite';
             $('.pz-lb-pay-opt').removeClass('selected');
             $('#pzLbOptOnsite').addClass('selected');
@@ -859,4 +850,3 @@ add_shortcode('pzlobby', function($atts) {
     <?php
     return ob_get_clean();
 });
-
