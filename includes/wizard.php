@@ -24,7 +24,7 @@ function pz_wz_render($atts) {
             '',
             'Accedi per prenotare',
             'Per prenotare una partita o una lezione devi prima effettuare il login.',
-            '/inizio/login/'
+            'login/'
         );
     }
 
