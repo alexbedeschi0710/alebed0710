@@ -94,7 +94,7 @@ function pz_pb_render($atts) {
 
       max-width:480px;
       margin:0 auto;
-      padding:12px 18px 160px !important;
+      padding:28px 18px 160px !important;
       font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
       color:var(--pz-ink);
       -webkit-font-smoothing:antialiased;
@@ -494,7 +494,7 @@ function pz_pb_render($atts) {
         var hh = parseInt(state.time.split(':')[0], 10);
         var mm = parseInt(state.time.split(':')[1], 10);
         var endMin = hh*60 + mm + state.duration;
-        var endStr = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'0');
+        var endStr = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'00');
 
         document.getElementById('pzPbSummaryText').textContent =
           (d ? d.dow + ' ' + d.day + ' ' + d.monthL : '') + ' · ' + state.time + '–' + endStr + ' · ' + (PZ.courts[state.courtId] || '');
@@ -556,7 +556,7 @@ function pz_pb_render($atts) {
         var hh = parseInt(state.time.split(':')[0], 10);
         var mm = parseInt(state.time.split(':')[1], 10);
         var endMin = hh*60 + mm + state.duration;
-        var endStr = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'0');
+        var endStr = String(Math.floor(endMin/60)).padStart(2,'00') + ':' + String(endMin%60).padStart(2,'00');
 
         document.getElementById('pzPbSuccessDetail').innerHTML =
           (d ? d.dow + ' ' + d.day + ' ' + d.monthL : '') +
