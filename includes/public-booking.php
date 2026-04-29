@@ -67,6 +67,8 @@ function pz_cpb_render($atts) {
         return pz_render_login_wall('', 'Accedi per prenotare', 'Per creare una partita pubblica devi prima effettuare il login.', 'login/');
     }
 
+    pz_global_styles();
+
     $services = pz_cpb_services();
     $courts   = pz_cpb_courts();
 
@@ -99,25 +101,7 @@ function pz_cpb_render($atts) {
 
     .pz-cpb-login-wall{max-width:480px;margin:30px auto;padding:24px;background:#fff3cd;border:1px solid #ffc107;border-radius:14px;text-align:center;font-family:'DM Sans',sans-serif;}
 
-    /* Header */
-    .pz-cpb-header{display:flex !important;align-items:center !important;position:relative !important;min-height:44px !important;margin-bottom:6px !important;}
-    .pz-cpb-back{
-        width:44px !important;height:44px !important;background:#FFFFFF !important;
-        border:1.5px solid #D9DCE3 !important;border-radius:50% !important;
-        display:flex !important;align-items:center !important;justify-content:center !important;
-        cursor:pointer !important;padding:0 !important;flex-shrink:0 !important;
-        position:relative !important;z-index:1 !important;
-        transition:background .15s ease,border-color .15s ease !important;
-    }
-    .pz-cpb-back svg{stroke:#8B92A5 !important;fill:none !important;width:18px !important;height:18px !important;}
-    .pz-cpb-back:hover{background:#F4F5F8 !important;border-color:#8B92A5 !important;}
-    .pz-cpb-title{
-        position:absolute !important;left:0 !important;right:0 !important;
-        font-size:19px !important;font-weight:700 !important;letter-spacing:-0.02em !important;
-        text-align:center !important;pointer-events:none !important;margin:0 !important;
-        color:#161B2E !important;background:transparent !important;text-transform:none !important;
-    }
-    .pz-cpb-sub{font-size:14px !important;color:#8B92A5 !important;line-height:1.5 !important;margin:0 0 22px !important;}
+    /* → header, back, title, sub: vedi pz-global.php (.pz-g-*) */
 
     /* Card */
     .pz-cpb-card{
@@ -270,13 +254,13 @@ function pz_cpb_render($atts) {
     <div id="pzCpbWrap">
 
         <!-- HEADER -->
-        <div class="pz-cpb-header">
-            <button class="pz-cpb-back" type="button" aria-label="Indietro" onclick="history.back()">
+        <div class="pz-g-header">
+            <button class="pz-g-back" type="button" aria-label="Indietro" onclick="history.back()">
                 <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </button>
-            <p class="pz-cpb-title">Crea Partita Pubblica</p>
+            <p class="pz-g-title">Crea Partita Pubblica</p>
         </div>
-        <p class="pz-cpb-sub">Scegli livello, data, ora e campo. Gli altri giocatori potranno aggregarsi.</p>
+        <p class="pz-g-sub">Scegli livello, data, ora e campo. Gli altri giocatori potranno aggregarsi.</p>
 
         <!-- CARD -->
         <div class="pz-cpb-card">
@@ -446,15 +430,14 @@ function pz_cpb_render($atts) {
         });
 
         // ── Durata ────────────────────────────────────────────────────────
-        // Regola: 60 min disponibile solo lun-ven prima delle 17:00
         function is60MinAllowed() {
-            if (!state.dateIso) return true; // non ancora scelto, mostra entrambi
+            if (!state.dateIso) return true;
             var d = new Date(state.dateIso + 'T12:00:00');
-            var dow = d.getDay(); // 0=dom, 6=sab
-            if (dow === 0 || dow === 6) return false; // weekend
+            var dow = d.getDay();
+            if (dow === 0 || dow === 6) return false;
             if (state.time) {
                 var h = parseInt(state.time.split(':')[0], 10);
-                if (h >= 17) return false; // feriale ma >= 17:00
+                if (h >= 17) return false;
             }
             return true;
         }
@@ -464,7 +447,6 @@ function pz_cpb_render($atts) {
             var btn60 = document.querySelector('.pz-cpb-duration-opt[data-min="60"]');
             var btn90 = document.querySelector('.pz-cpb-duration-opt[data-min="90"]');
             if (!allowed) {
-                // Forza 90 min
                 if (state.duration === 60) {
                     state.duration = 90;
                     state.time     = null;
@@ -480,7 +462,6 @@ function pz_cpb_render($atts) {
                 btn60.style.opacity = '';
                 btn60.title = '';
             }
-            // Aggiorna classe is-active
             document.querySelectorAll('.pz-cpb-duration-opt').forEach(function(b) {
                 b.classList.toggle('is-active', parseInt(b.getAttribute('data-min'), 10) === state.duration);
             });
@@ -727,7 +708,6 @@ function pz_cpb_ajax_availability() {
 
     $tz_local = wp_timezone();
 
-    // Amelia salva in locale — il range giornaliero è in locale
     $day_start = (new DateTime($date . ' 00:00:00', $tz_local))->format('Y-m-d H:i:s');
     $day_end   = (new DateTime($date . ' 23:59:59', $tz_local))->format('Y-m-d H:i:s');
 
@@ -750,7 +730,7 @@ function pz_cpb_ajax_availability() {
         ];
     }
 
-    $weekday   = (int)date('N', strtotime($date)); // 1=lun … 7=dom
+    $weekday   = (int)date('N', strtotime($date));
     $is_wday   = ($weekday >= 1 && $weekday <= 5);
     $is_weekend = ($weekday >= 6);
     $is_today  = ($date === (new DateTime('now', $tz_local))->format('Y-m-d'));
@@ -764,7 +744,6 @@ function pz_cpb_ajax_availability() {
             $em  = $sm + $duration;
             if ($em > PZ_CPB_CLOSE_HOUR * 60) continue;
 
-            // 60 min non disponibile: weekend oppure feriale dalle 17:00 in poi
             if ($duration === 60 && ($is_weekend || ($is_wday && $h >= 17))) {
                 $slots[$ts] = ['available' => false, 'courts' => []];
                 continue;
@@ -820,7 +799,6 @@ function pz_cpb_ajax_book() {
     global $wpdb;
     $prefix = PZ_DB_PREFIX;
 
-    // Customer Amelia
     $user  = wp_get_current_user();
     $email = $user->user_email;
 
@@ -842,7 +820,6 @@ function pz_cpb_ajax_book() {
         $customer_id = (int)$customer->id;
     }
 
-    // Amelia salva bookingStart/bookingEnd in timezone locale (Europe/Rome), non UTC
     $tz_local = wp_timezone();
 
     try {
@@ -853,10 +830,9 @@ function pz_cpb_ajax_book() {
     if ($start_local->getTimestamp() < time()) wp_send_json_error('Slot già passato');
 
     $end_local     = (clone $start_local)->modify('+' . $duration . ' minutes');
-    $booking_start = $start_local->format('Y-m-d H:i:s');   // locale, come Amelia
-    $booking_end   = $end_local->format('Y-m-d H:i:s');     // locale, come Amelia
+    $booking_start = $start_local->format('Y-m-d H:i:s');
+    $booking_end   = $end_local->format('Y-m-d H:i:s');
 
-    // Concurrency check — confronto in locale come il DB
     $conflict = (int)$wpdb->get_var($wpdb->prepare(
         "SELECT COUNT(*) FROM {$prefix}appointments
          WHERE locationId = %d AND status NOT IN ('canceled','rejected')
@@ -865,18 +841,15 @@ function pz_cpb_ajax_book() {
     ));
     if ($conflict > 0) wp_send_json_error('Slot non più disponibile, ricarica la pagina.');
 
-    // Provider
     $provider_id = (int)$wpdb->get_var(
         "SELECT id FROM {$prefix}users WHERE type = 'provider' ORDER BY id ASC LIMIT 1"
     );
     if (!$provider_id) wp_send_json_error('Nessun provider configurato in Amelia.');
 
-    // Prezzo
     $price = (float)$wpdb->get_var($wpdb->prepare(
         "SELECT price FROM {$prefix}services WHERE id = %d", $service_id
     ));
 
-    // Crea appointment
     $ok = $wpdb->insert("{$prefix}appointments", [
         'bookingStart'       => $booking_start,
         'bookingEnd'         => $booking_end,
@@ -891,7 +864,6 @@ function pz_cpb_ajax_book() {
 
     $apt_id = $wpdb->insert_id;
 
-    // Crea customer_booking (creatore = primo partecipante, paga in loco)
     $bk_ok = $wpdb->insert("{$prefix}customer_bookings", [
         'appointmentId' => $apt_id,
         'customerId'    => $customer_id,
@@ -905,7 +877,6 @@ function pz_cpb_ajax_book() {
         wp_send_json_error('Errore creazione booking: ' . $wpdb->last_error);
     }
 
-    // Sync → crea post pz_match (serviceId è in PZ_PUBLIC_SERVICE_IDS)
     if (function_exists('pz_sync_appointment')) {
         pz_sync_appointment($apt_id, $service_id);
     }
