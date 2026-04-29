@@ -3,24 +3,14 @@
  * PadelZero - Booking Partita Privata
  *
  * Shortcode:  [pz_book_private]
- *
- * Crea direttamente un appointment in Amelia con status='approved'
- * e un customer_booking collegato all'utente WordPress corrente.
- *
- * Pagamento: SOLO IN LOCO (per ora). La prenotazione resta a debito
- * e l'amministratore la riconcilia in Amelia.
  */
 
 if (!defined('ABSPATH')) exit;
 
-/* ============================================================
- *  CONFIG
- * ============================================================ */
-
 function pz_pb_services() {
     return [
-        9  => 60,   // Partita da 1 ora
-        10 => 90,   // Partita da 1 ora e mezza
+        9  => 60,
+        10 => 90,
     ];
 }
 
@@ -36,11 +26,6 @@ function pz_pb_courts() {
 define('PZ_PB_OPEN_HOUR',   8);
 define('PZ_PB_CLOSE_HOUR', 23);
 define('PZ_PB_DAYS_AHEAD', 14);
-
-
-/* ============================================================
- *  SHORTCODE
- * ============================================================ */
 
 add_shortcode('pz_book_private', 'pz_pb_render');
 
@@ -71,7 +56,6 @@ function pz_pb_render($atts) {
         'daysAhead' => PZ_PB_DAYS_AHEAD,
     ];
 
-    // Assicura che gli stili globali siano stampati
     if (function_exists('pz_global_styles')) pz_global_styles();
 
     ob_start();
@@ -94,7 +78,7 @@ function pz_pb_render($atts) {
 
       max-width:480px;
       margin:0 auto;
-      padding:28px 18px 160px !important;
+      padding:0 18px 160px !important;
       font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
       color:var(--pz-ink);
       -webkit-font-smoothing:antialiased;
@@ -104,8 +88,6 @@ function pz_pb_render($atts) {
     .pz-pb-wrap *,
     .pz-pb-wrap *::before,
     .pz-pb-wrap *::after{box-sizing:border-box}
-
-    /* → header, back, title, sub: vedi pz-global.php (.pz-g-*) */
 
     /* Card */
     .pz-pb-card{
@@ -122,22 +104,43 @@ function pz_pb_render($atts) {
     .pz-pb-section-head svg{width:18px;height:18px;stroke:var(--pz-ink);stroke-width:2;fill:none;flex-shrink:0}
     .pz-pb-section-label{font-size:15px;font-weight:700;letter-spacing:-0.01em}
 
-    /* Date picker */
-    .pz-pb-dates{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px;scrollbar-width:none}
-    .pz-pb-dates::-webkit-scrollbar{display:none}
+    /* Date — griglia fissa 4 colonne con bordi */
+    .pz-pb-dates{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      overflow:hidden;
+      padding:2px;
+    }
     .pz-pb-date{
-      flex:0 0 auto;width:78px;
-      background:var(--pz-white) !important;color:var(--pz-muted) !important;
-      border:1.5px solid var(--pz-line-strong) !important;border-radius:14px !important;
-      padding:14px 10px 12px;text-align:center;cursor:pointer;
+      background:var(--pz-white) !important;
+      color:var(--pz-muted) !important;
+      border:1.5px solid var(--pz-line-strong) !important;
+      border-radius:14px !important;
+      padding:12px 6px;
+      text-align:center;
+      cursor:pointer;
       transition:transform .15s ease,background .2s ease,color .2s ease,border-color .2s ease;
-      user-select:none;font-family:inherit;box-shadow:none !important;
+      user-select:none;
+      font-family:inherit;
+      box-shadow:none !important;
+      width:100%;
     }
     .pz-pb-date:hover:not(.is-active){transform:translateY(-1px);border-color:var(--pz-ink) !important}
-    .pz-pb-date-dow,.pz-pb-date-mo{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
-    .pz-pb-date-day{font-size:24px;font-weight:700;line-height:1.1;margin:6px 0 4px;color:var(--pz-ink) !important;letter-spacing:-0.02em}
+    .pz-pb-date-dow,.pz-pb-date-mo{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+    .pz-pb-date-day{font-size:22px;font-weight:700;line-height:1.1;margin:4px 0 3px;color:var(--pz-ink) !important;letter-spacing:-0.02em}
     .pz-pb-date.is-active{background:var(--pz-green) !important;border-color:var(--pz-green) !important;color:#D6F5E0 !important;}
     .pz-pb-date.is-active .pz-pb-date-day{color:var(--pz-white) !important}
+
+    /* Scroll date extra (giorni 5-14) */
+    .pz-pb-dates-more{
+      display:flex;gap:8px;overflow-x:auto;
+      padding:2px 2px 6px;margin-top:8px;scrollbar-width:none;
+    }
+    .pz-pb-dates-more::-webkit-scrollbar{display:none}
+    .pz-pb-dates-more .pz-pb-date{
+      flex:0 0 auto;width:72px;
+    }
 
     /* Toggle durata */
     .pz-pb-duration{
@@ -240,7 +243,7 @@ function pz_pb_render($atts) {
 
     <div class="pz-pb-wrap" id="pzPbWrap">
 
-      <!-- HEADER — usa classi globali pz-g-* -->
+      <!-- HEADER -->
       <div class="pz-g-header">
         <button class="pz-g-back" type="button" aria-label="Indietro" onclick="history.back()">
           <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -258,7 +261,10 @@ function pz_pb_render($atts) {
             <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span class="pz-pb-section-label">Seleziona data</span>
           </div>
+          <!-- Prima riga: 4 giorni fissi in griglia -->
           <div class="pz-pb-dates" id="pzPbDates"></div>
+          <!-- Giorni 5-14 a scorrimento -->
+          <div class="pz-pb-dates-more" id="pzPbDatesMore"></div>
         </div>
 
         <!-- Durata -->
@@ -295,7 +301,6 @@ function pz_pb_render($atts) {
           </div>
         </div>
 
-        <!-- Riepilogo + errori -->
         <div class="pz-pb-summary" id="pzPbSummary">
           <div id="pzPbSummaryText">—</div>
           <div class="pz-pb-summary-price" id="pzPbSummaryPrice">€0</div>
@@ -341,7 +346,6 @@ function pz_pb_render($atts) {
         slots:    null,
       };
 
-      // ── Date ─────────────────────────────────────────────────────────────
       function buildDates(){
         var arr = [], now = new Date();
         for (var i = 0; i < PZ.daysAhead; i++){
@@ -358,32 +362,43 @@ function pz_pb_render($atts) {
       }
       var DATES = buildDates();
 
+      function makeDateBtn(d) {
+        var el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'pz-pb-date' + (d.iso === state.dateIso ? ' is-active' : '');
+        el.setAttribute('data-iso', d.iso);
+        el.innerHTML =
+          '<div class="pz-pb-date-dow">' + d.dow + '</div>' +
+          '<div class="pz-pb-date-day">' + d.day + '</div>' +
+          '<div class="pz-pb-date-mo">' + d.month + '</div>';
+        el.addEventListener('click', function(){
+          state.dateIso = d.iso;
+          state.time    = null;
+          state.courtId = null;
+          renderDates();
+          updateDurationToggle();
+          renderCourts();
+          loadAvailability();
+          updateCta();
+        });
+        return el;
+      }
+
       function renderDates(){
-        var root = document.getElementById('pzPbDates');
-        root.innerHTML = '';
-        DATES.forEach(function(d){
-          var el = document.createElement('button');
-          el.type = 'button';
-          el.className = 'pz-pb-date' + (d.iso === state.dateIso ? ' is-active' : '');
-          el.innerHTML =
-            '<div class="pz-pb-date-dow">' + d.dow + '</div>' +
-            '<div class="pz-pb-date-day">' + d.day + '</div>' +
-            '<div class="pz-pb-date-mo">' + d.month + '</div>';
-          el.addEventListener('click', function(){
-            state.dateIso = d.iso;
-            state.time    = null;
-            state.courtId = null;
-            renderDates();
-            updateDurationToggle();
-            renderCourts();
-            loadAvailability();
-            updateCta();
-          });
-          root.appendChild(el);
+        var grid = document.getElementById('pzPbDates');
+        var more = document.getElementById('pzPbDatesMore');
+        grid.innerHTML = '';
+        more.innerHTML = '';
+        DATES.forEach(function(d, i){
+          var btn = makeDateBtn(d);
+          if (i < 4) {
+            grid.appendChild(btn);
+          } else {
+            more.appendChild(btn);
+          }
         });
       }
 
-      // ── Durata ─────────────────────────────────────────────────────────────
       function is60MinAllowed(){
         if (!state.dateIso) return true;
         var d = new Date(state.dateIso + 'T12:00:00');
@@ -399,7 +414,6 @@ function pz_pb_render($atts) {
       function updateDurationToggle(){
         var allowed = is60MinAllowed();
         var btn60 = document.querySelector('.pz-pb-duration-opt[data-min="60"]');
-        var btn90 = document.querySelector('.pz-pb-duration-opt[data-min="90"]');
         if (!allowed){
           if (state.duration === 60){
             state.duration = 90;
@@ -436,10 +450,9 @@ function pz_pb_render($atts) {
         });
       }
 
-      // ── Orari ─────────────────────────────────────────────────────────────
       function renderTimes(loading){
         var root = document.getElementById('pzPbTimes');
-        if (loading){ root.innerHTML = '<div class="pz-pb-loading">Carico disponibilità…</div>'; return; }
+        if (loading){ root.innerHTML = '<div class="pz-pb-loading">Carico disponibilit\u00e0\u2026</div>'; return; }
         if (!state.slots){ root.innerHTML = '<div class="pz-pb-loading" style="color:#C5C9D2">Seleziona prima la data</div>'; return; }
         root.innerHTML = '';
         Object.keys(state.slots).forEach(function(t){
@@ -456,7 +469,6 @@ function pz_pb_render($atts) {
         });
       }
 
-      // ── Campi ─────────────────────────────────────────────────────────────
       function renderCourts(){
         var btns = document.querySelectorAll('.pz-pb-court');
         var availableForSlot = null;
@@ -478,7 +490,6 @@ function pz_pb_render($atts) {
         });
       }
 
-      // ── Riepilogo + CTA ─────────────────────────────────────────────────────
       function updateCta(){
         var ready = state.dateIso && state.time && state.courtId;
         document.getElementById('pzPbCta').disabled = !ready;
@@ -494,16 +505,15 @@ function pz_pb_render($atts) {
         var hh = parseInt(state.time.split(':')[0], 10);
         var mm = parseInt(state.time.split(':')[1], 10);
         var endMin = hh*60 + mm + state.duration;
-        var endStr = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'00');
+        var endStr = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'0');
 
         document.getElementById('pzPbSummaryText').textContent =
-          (d ? d.dow + ' ' + d.day + ' ' + d.monthL : '') + ' · ' + state.time + '–' + endStr + ' · ' + (PZ.courts[state.courtId] || '');
+          (d ? d.dow + ' ' + d.day + ' ' + d.monthL : '') + ' \u00b7 ' + state.time + '\u2013' + endStr + ' \u00b7 ' + (PZ.courts[state.courtId] || '');
         document.getElementById('pzPbSummaryPrice').textContent =
-          '€' + price.toFixed(2).replace('.', ',');
+          '\u20ac' + price.toFixed(2).replace('.', ',');
         sum.classList.add('is-visible');
       }
 
-      // ── Disponibilità AJAX ────────────────────────────────────────────────────
       var availXhr;
       function loadAvailability(){
         if (!state.dateIso){ state.slots = null; renderTimes(false); return; }
@@ -516,7 +526,7 @@ function pz_pb_render($atts) {
           try {
             var res = JSON.parse(availXhr.responseText);
             if (res && res.success){ state.slots = res.data.slots; renderTimes(false); renderCourts(); }
-            else { flashError(res && res.data ? res.data : 'Errore disponibilità'); state.slots = null; renderTimes(false); }
+            else { flashError(res && res.data ? res.data : 'Errore disponibilit\u00e0'); state.slots = null; renderTimes(false); }
           } catch(e){ flashError('Errore di connessione'); state.slots = null; renderTimes(false); }
         };
         availXhr.send('action=pz_private_availability&nonce=' + encodeURIComponent(PZ.nonce)
@@ -524,12 +534,11 @@ function pz_pb_render($atts) {
           + '&duration=' + state.duration);
       }
 
-      // ── Submit ─────────────────────────────────────────────────────────────
       document.getElementById('pzPbCta').addEventListener('click', function(){
         var btn = this;
         if (btn.disabled) return;
         btn.disabled = true;
-        btn.textContent = 'Prenotazione in corso…';
+        btn.textContent = 'Prenotazione in corso\u2026';
 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', PZ.ajaxUrl, true);
@@ -550,24 +559,22 @@ function pz_pb_render($atts) {
           + '&court_id=' + state.courtId);
       });
 
-      // ── Successo ─────────────────────────────────────────────────────────────
       function showSuccess(data){
         var d = DATES.find(function(x){ return x.iso === state.dateIso; });
         var hh = parseInt(state.time.split(':')[0], 10);
         var mm = parseInt(state.time.split(':')[1], 10);
         var endMin = hh*60 + mm + state.duration;
-        var endStr = String(Math.floor(endMin/60)).padStart(2,'00') + ':' + String(endMin%60).padStart(2,'00');
+        var endStr = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'0');
 
         document.getElementById('pzPbSuccessDetail').innerHTML =
           (d ? d.dow + ' ' + d.day + ' ' + d.monthL : '') +
-          '<br>' + state.time + '–' + endStr +
+          '<br>' + state.time + '\u2013' + endStr +
           '<br>' + (PZ.courts[state.courtId] || '') +
-          '<br><strong>€' + (data.price || 0).toFixed(2).replace('.', ',') + '</strong>';
+          '<br><strong>\u20ac' + (data.price || 0).toFixed(2).replace('.', ',') + '</strong>';
         document.getElementById('pzPbSuccess').classList.add('is-open');
       }
       document.getElementById('pzPbSuccessBtn').addEventListener('click', function(){ location.reload(); });
 
-      // ── Errori ─────────────────────────────────────────────────────────────
       var errTimer;
       function flashError(msg){
         var el = document.getElementById('pzPbError');
@@ -577,7 +584,6 @@ function pz_pb_render($atts) {
         errTimer = setTimeout(function(){ el.classList.remove('is-visible'); }, 4500);
       }
 
-      // ── Event delegation orari ──────────────────────────────────────────────
       document.getElementById('pzPbTimes').addEventListener('click', function(e){
         var btn = e.target.closest('.pz-pb-time');
         if (!btn) return;
@@ -593,7 +599,6 @@ function pz_pb_render($atts) {
         updateCta();
       });
 
-      // ── Init ─────────────────────────────────────────────────────────────
       state.dateIso = DATES[0].iso;
       renderDates();
       renderDuration();
@@ -753,7 +758,7 @@ function pz_pb_ajax_book() {
     } catch (Exception $e) {
         wp_send_json_error('Orario non valido');
     }
-    if ($start_local->getTimestamp() < time()) wp_send_json_error('Slot già passato');
+    if ($start_local->getTimestamp() < time()) wp_send_json_error('Slot gi\u00e0 passato');
 
     $end_local     = (clone $start_local)->modify('+' . $duration . ' minutes');
     $booking_start = $start_local->format('Y-m-d H:i:s');
@@ -765,7 +770,7 @@ function pz_pb_ajax_book() {
          AND bookingStart < %s AND bookingEnd > %s",
         $court_id, $booking_end, $booking_start
     ));
-    if ($conflict > 0) wp_send_json_error('Lo slot non è più disponibile, ricarica la pagina.');
+    if ($conflict > 0) wp_send_json_error('Lo slot non \u00e8 pi\u00f9 disponibile, ricarica la pagina.');
 
     $provider_id = (int)$wpdb->get_var(
         "SELECT id FROM {$prefix}users WHERE type = 'provider' ORDER BY id ASC LIMIT 1"

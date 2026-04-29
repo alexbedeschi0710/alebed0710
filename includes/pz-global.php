@@ -49,6 +49,7 @@ function pz_global_styles() {
   align-items: center !important;
   position: relative !important;
   min-height: 44px !important;
+  margin-top: 16px !important;
   margin-bottom: 14px !important;
 }
 
