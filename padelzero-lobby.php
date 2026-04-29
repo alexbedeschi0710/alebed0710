@@ -42,6 +42,7 @@ require_once PZ_PLUGIN_DIR . 'includes/public-booking.php';
 require_once PZ_PLUGIN_DIR . 'includes/my-bookings.php';
 require_once PZ_PLUGIN_DIR . 'includes/bottom-nav.php';
 require_once PZ_PLUGIN_DIR . 'includes/top-bar.php';
+require_once PZ_PLUGIN_DIR . 'includes/account.php';
 
 // ─── 5. Pagamenti e admin ─────────────────────────────────────────────────
 require_once PZ_PLUGIN_DIR . 'includes/ajax-handlers.php';
