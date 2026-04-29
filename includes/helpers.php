@@ -161,8 +161,8 @@ add_shortcode('pz_debug_nav', function() {
  * @param string $login_url Path pagina login (default: /inizio/login/)
  */
 function pz_render_login_wall( $icon = '', $title = 'Accesso richiesto', $subtitle = 'Effettua il login per continuare.', $login_url = '/inizio/login/' ) {
-    $url          = esc_url( home_url( $login_url ) );
-    $url_register = esc_url( home_url( rtrim( $login_url, '/' ) . '/#register' ) );
+    $url          = esc_url( pz_app_url( ltrim( $login_url, '/' ) ) );
+    $url_register = esc_url( pz_app_url( 'login/#register' ) );
     ob_start();
     ?>
     <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px 48px;text-align:center;min-height:320px">
@@ -183,4 +183,16 @@ function pz_render_login_wall( $icon = '', $title = 'Accesso richiesto', $subtit
     </div>
     <?php
     return ob_get_clean();
+}
+
+/* ============================================================
+ *  APP URL HELPER
+ *  Costruisce URL assoluti relativi a PZ_APP_BASE.
+ *  Uso: pz_app_url()             → https://sito.it/app/
+ *       pz_app_url('login/')     → https://sito.it/app/login/
+ *       pz_app_url('borsellino/')→ https://sito.it/app/borsellino/
+ * ============================================================ */
+function pz_app_url( $path = '' ) {
+    $base = defined('PZ_APP_BASE') ? PZ_APP_BASE : '/app/';
+    return home_url( $base . ltrim( $path, '/' ) );
 }
