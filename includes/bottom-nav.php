@@ -1,61 +1,43 @@
 <?php
 /**
  * PadelZero - Bottom Navigation
- *
  * Shortcode: [pz_bottom_nav]
- *
- * Barra di navigazione fissa in basso, stile mobile-app, con 4 icone:
- *   • Home          → wizard / pagina iniziale
- *   • Prenotazioni  → pagina "le mie prenotazioni"
- *   • Wallet        → borsellino
- *   • Account       → profilo utente
- *
- * Va inserito su tutte le pagine del flusso (wizard, booking privato,
- * lobby, ecc.) — più comodo: dentro un widget Elementor "Shortcode"
- * sul template footer del sito, oppure pagina-per-pagina.
- *
- * Le rotte sono configurate in alto, modificabili senza toccare il resto.
  */
 
 if (!defined('ABSPATH')) exit;
 
 /* ============================================================
- *  CONFIG  ── slug delle pagine collegate dal nav
+ *  CONFIG — rotte costruite con PZ_APP_BASE
  * ============================================================ */
 function pz_nav_routes() {
+    $base = defined('PZ_APP_BASE') ? PZ_APP_BASE : '/app/';
     return [
-        'home'          => '/inizio/',
-        'prenotazioni'  => '/inizio/le-mie-prenotazioni/',
-        'wallet'        => '/inizio/borsellino/',
-        'account'       => '/inizio/account/',
+        'home'         => $base,
+        'prenotazioni' => $base . 'le-mie-prenotazioni/',
+        'wallet'       => $base . 'borsellino/',
+        'account'      => $base . 'account/',
     ];
 }
-
 
 add_shortcode('pz_bottom_nav', 'pz_nav_render');
 
 function pz_nav_render($atts) {
-    if (!is_user_logged_in()) return '';   // niente nav per visitatori
+    if (!is_user_logged_in()) return '';
 
     $routes = pz_nav_routes();
     $home   = home_url('/');
 
-    // Prende lo slug della pagina corrente (es. "le-mie-prenotazioni")
-    // Gestisce anche query string e trailing slash
     $req_path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-    $req_path = '/' . trim($req_path, '/') . '/'; // normalizza: /slug/
+    $req_path = '/' . trim($req_path, '/') . '/';
 
-    // Confronto esatto: l'URI deve contenere esattamente lo slug della rotta
     $active = '';
     foreach ($routes as $key => $slug) {
-        // Normalizza lo slug: /inizio/ → /inizio/
         $normalized = '/' . trim($slug, '/') . '/';
         if ($normalized !== '//' && $req_path === $normalized) {
             $active = $key;
             break;
         }
     }
-    // Fallback home se siamo sulla root
     if (!$active && ($req_path === '//' || $req_path === '/')) $active = 'home';
 
     $url = function($slug) use ($home) {
@@ -65,7 +47,6 @@ function pz_nav_render($atts) {
     ob_start();
     ?>
     <style>
-    /* ===== Bottom nav: blindato con !important contro tema ===== */
     .pz-nav{
       position:fixed !important;
       bottom:0 !important;left:0 !important;right:0 !important;
@@ -129,7 +110,6 @@ function pz_nav_render($atts) {
           <span class="pz-nav-label">Prenotazioni</span>
         </a>
 
-        <!-- Icona installa PWA -->
         <a href="#" onclick="event.preventDefault();pzOpenPwaSheet();" class="">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2"/>
@@ -150,11 +130,8 @@ function pz_nav_render($atts) {
     return ob_get_clean();
 }
 
-
 /* ============================================================
- *  AUTO-INJECT — inietta automaticamente il nav in footer
- *  per tutte le pagine che contengono shortcode del plugin.
- *  Così l'utente non deve metterlo manualmente ovunque.
+ *  AUTO-INJECT
  * ============================================================ */
 add_action('wp_footer', 'pz_nav_auto_inject', 5);
 
@@ -164,26 +141,18 @@ function pz_nav_auto_inject() {
     global $post;
     if (!$post) return;
 
-    // Evita doppio rendering se lo shortcode è già in pagina
     if (has_shortcode($post->post_content, 'pz_bottom_nav')) return;
 
     $triggers = [
-        'pz_wizard',
-        'pz_book_private',
-        'pz_create_public',
-        'pz_my_bookings',
-        'pzlobby',
-        'pz_wallet_balance',
-        'pz_rating_setup',
+        'pz_wizard', 'pz_book_private', 'pz_create_public',
+        'pz_my_bookings', 'pzlobby', 'pz_wallet_balance', 'pz_rating_setup',
     ];
 
-    // 1) Check nel post_content standard
     $found = false;
     foreach ($triggers as $sc) {
         if (has_shortcode($post->post_content, $sc)) { $found = true; break; }
     }
 
-    // 2) Elementor salva il contenuto in _elementor_data (JSON) — post_content è quasi vuoto
     if (!$found) {
         $el_data = get_post_meta($post->ID, '_elementor_data', true);
         if ($el_data) {
@@ -197,4 +166,3 @@ function pz_nav_auto_inject() {
 
     echo do_shortcode('[pz_bottom_nav]');
 }
-
