@@ -101,7 +101,17 @@ add_shortcode('pz_account', function() {
         cursor: pointer !important; border: 2px solid #fff !important;
     }
     .pza-avatar-edit svg { stroke: #fff !important; fill: none !important; width: 12px !important; height: 12px !important; }
-    #pzAvatarInput { display: none !important; }
+    /* Nascosto in modo mobile-safe: non display:none (iOS/Android lo ignora) */
+    #pzAvatarInput {
+        position: absolute !important;
+        width: 1px !important; height: 1px !important;
+        padding: 0 !important; margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0,0,0,0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+        opacity: 0 !important;
+    }
     .pza-avatar-info { flex: 1 !important; }
     .pza-avatar-name { font-size: 17px !important; font-weight: 700 !important; color: #161B2E !important; margin: 0 0 2px !important; }
     .pza-avatar-sub  { font-size: 13px !important; color: #8B92A5 !important; margin: 0 !important; }
@@ -206,7 +216,7 @@ add_shortcode('pz_account', function() {
                     <label for="pzAvatarInput" class="pza-avatar-edit" title="Cambia foto">
                         <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     </label>
-                    <input type="file" id="pzAvatarInput" accept="image/*">
+                    <input type="file" id="pzAvatarInput" accept="image/*" capture="environment">
                 </div>
                 <div class="pza-avatar-info">
                     <p class="pza-avatar-name"><?php echo esc_html(trim($fname . ' ' . $lname) ?: $user->display_name); ?></p>
@@ -389,9 +399,12 @@ add_action('wp_ajax_pz_upload_avatar', function() {
     if (!is_user_logged_in()) wp_send_json_error('Login richiesto');
     if (empty($_FILES['avatar']['tmp_name'])) wp_send_json_error('Nessun file ricevuto');
 
-    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    $mime    = mime_content_type($_FILES['avatar']['tmp_name']);
-    if (!in_array($mime, $allowed)) wp_send_json_error('Formato non supportato (usa JPG, PNG, WEBP)');
+    // Validazione con API WordPress nativa (evita crash da mime_content_type su alcuni hosting)
+    $filetype    = wp_check_filetype_and_ext($_FILES['avatar']['tmp_name'], $_FILES['avatar']['name']);
+    $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (empty($filetype['ext']) || !in_array(strtolower($filetype['ext']), $allowed_ext, true)) {
+        wp_send_json_error('Formato non supportato (usa JPG, PNG, GIF, WEBP)');
+    }
     if ($_FILES['avatar']['size'] > 5 * 1024 * 1024) wp_send_json_error('Immagine troppo grande (max 5MB)');
 
     require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -403,7 +416,16 @@ add_action('wp_ajax_pz_upload_avatar', function() {
     if (is_wp_error($uploaded)) wp_send_json_error($uploaded->get_error_message());
 
     $url = wp_get_attachment_url($uploaded);
+
+    // Salva in pz_avatar (custom) e in simple_local_avatar (compatibilità plugin avatar)
     update_user_meta($uid, 'pz_avatar', $url);
+    update_user_meta($uid, 'simple_local_avatar', [
+        32  => $url,
+        64  => $url,
+        96  => $url,
+        128 => $url,
+    ]);
+
     wp_send_json_success(['url' => $url]);
 });
 
