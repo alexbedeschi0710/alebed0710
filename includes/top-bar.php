@@ -1,11 +1,6 @@
 <?php
 /**
  * PadelZero - Top Bar personalizzata
- *
- * - Nasconde la admin bar di WordPress per gli utenti non-admin
- * - Inietta una top bar fissa coerente con il design system PadelZero
- * - Auto-inject nel wp_body_open / wp_head per tutti gli utenti loggati
- *   sulle pagine che contengono shortcode del plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -58,13 +53,14 @@ function pz_top_bar_render( $atts = [] ) {
     if ( $user->last_name )  $initials .= mb_strtoupper( mb_substr( $user->last_name,  0, 1 ) );
     if ( ! $initials )       $initials  = mb_strtoupper( mb_substr( $user->display_name, 0, 2 ) );
 
-    $avatar_url = get_avatar_url( $user->ID, [
-        'size'          => 64,
-        'default'       => 'blank',
-        'force_default' => false,
-    ] );
+    // Usa pz_get_user_avatar_url per leggere pz_avatar come prima priorità
+    $avatar_url = pz_get_user_avatar_url( $user->ID, 64 );
+    $has_photo  = $avatar_url && strpos( $avatar_url, 'gravatar.com/avatar/00000000000000000000000000000000' ) === false;
 
-    $has_photo = $avatar_url && strpos( $avatar_url, 'd=blank' ) === false && strpos( $avatar_url, 'gravatar.com/avatar/00000000000000000000000000000000' ) === false;
+    // Se è solo il Gravatar di default (mystery person), trattalo come assenza foto
+    if ( $has_photo && strpos( $avatar_url, 'd=mp' ) !== false && strpos( $avatar_url, 'gravatar.com' ) !== false ) {
+        $has_photo = false;
+    }
 
     $show_back  = filter_var( $atts['show_back'], FILTER_VALIDATE_BOOLEAN );
     $back_url   = esc_url( $atts['back_url'] );
