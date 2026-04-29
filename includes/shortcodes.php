@@ -242,7 +242,7 @@ add_shortcode('pzlobby', function($atts) {
     <style>
     /* ===== PZ Lobby — CSS blindato v4 ===== */
     #pzLobbyWrap,#pzLobbyWrap *{box-sizing:border-box !important;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif !important;}
-    #pzLobbyWrap{max-width:640px !important;margin:0 auto !important;padding:16px 0 80px !important;color:#161B2E !important;background:transparent !important;}
+    #pzLobbyWrap{max-width:640px !important;margin:0 auto !important;padding:30px 0 80px !important;color:#161B2E !important;background:transparent !important;}
 
     /* Filtri */
     .pz-lb-filters{display:flex !important;gap:10px !important;flex-wrap:wrap !important;margin-bottom:24px !important;align-items:stretch !important;}
