@@ -19,6 +19,33 @@ function pz_nav_routes() {
     ];
 }
 
+/* ============================================================
+ *  HELPER AVATAR — legge Simple Local Avatars, poi fallback
+ * ============================================================ */
+function pz_get_user_avatar_url($user_id, $size = 64) {
+    // Simple Local Avatars salva un array con chiavi per dimensione
+    $meta = get_user_meta($user_id, 'simple_local_avatar', true);
+    if (!empty($meta) && is_array($meta)) {
+        // Prova prima la dimensione richiesta, poi la più grande disponibile
+        if (!empty($meta[$size])) return $meta[$size];
+        // Le chiavi sono dimensioni numeriche: prendi la più grande
+        $biggest = 0;
+        $url     = '';
+        foreach ($meta as $k => $v) {
+            if (is_numeric($k) && (int)$k > $biggest) {
+                $biggest = (int)$k;
+                $url     = $v;
+            }
+        }
+        if ($url) return $url;
+        // Fallback: primo valore dell'array
+        $first = reset($meta);
+        if ($first && is_string($first)) return $first;
+    }
+    // Fallback Gravatar / plugin attivi
+    return get_avatar_url($user_id, ['size' => $size, 'default' => 'mp']);
+}
+
 add_shortcode('pz_bottom_nav', 'pz_nav_render');
 
 function pz_nav_render($atts) {
@@ -44,9 +71,8 @@ function pz_nav_render($atts) {
         return rtrim($home, '/') . $slug;
     };
 
-    // Avatar utente corrente
     $user_id = get_current_user_id();
-    $av_url  = get_avatar_url($user_id, ['size' => 64, 'default' => 'mp']);
+    $av_url  = pz_get_user_avatar_url($user_id, 64);
 
     ob_start();
     ?>
@@ -99,7 +125,6 @@ function pz_nav_render($atts) {
       line-height:1 !important;
       text-transform:none !important;
     }
-    /* Avatar tab account */
     .pz-nav-avatar{
       width:24px !important;height:24px !important;
       border-radius:50% !important;
