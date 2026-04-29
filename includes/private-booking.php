@@ -109,28 +109,12 @@ function pz_pb_render($atts) {
     }
 
     /* Header */
-    .pz-pb-header{
-      display:flex;align-items:center;
-      position:relative;min-height:44px;margin-bottom:14px;
-    }
-    .pz-pb-back{
-      width:44px !important;height:44px !important;
-      background:#FFFFFF !important;
-      border:1.5px solid #D9DCE3 !important;border-radius:50% !important;
-      display:flex !important;align-items:center !important;justify-content:center !important;
-      cursor:pointer !important;
-      transition:background .15s ease,border-color .15s ease !important;
-      box-shadow:none !important;padding:0 !important;flex-shrink:0 !important;
-      position:relative;z-index:1;
-    }
-    .pz-pb-back svg{stroke:#8B92A5 !important;width:18px !important;height:18px !important;}
-    .pz-pb-back:hover{background:#F4F5F8 !important;border-color:#8B92A5 !important;}
-    .pz-pb-title{
-      position:absolute;left:0;right:0;
-      font-size:19px;font-weight:700;letter-spacing:-0.02em;
-      text-align:center;pointer-events:none;margin:0;
-    }
-    .pz-pb-subtitle{font-size:14px;color:var(--pz-muted);line-height:1.5;margin:0 0 22px;padding:0 4px;text-align:center;}
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
 
     /* Card */
     .pz-pb-card{
@@ -266,11 +250,11 @@ function pz_pb_render($atts) {
     <div class="pz-pb-wrap" id="pzPbWrap">
 
       <!-- HEADER -->
-      <div class="pz-pb-header">
-        <button class="pz-pb-back" type="button" aria-label="Indietro" onclick="history.back()">
+      <div class="pz-g-header">
+        <button class="pz-g-back" type="button" aria-label="Indietro" onclick="history.back()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <div class="pz-pb-title">Prenota Partita</div>
+        <div class="pz-g-title">Prenota Partita</div>
       </div>
       <p class="pz-pb-subtitle">Scegli data, durata, ora e campo per la tua partita privata.</p>
 
