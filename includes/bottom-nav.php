@@ -44,6 +44,10 @@ function pz_nav_render($atts) {
         return rtrim($home, '/') . $slug;
     };
 
+    // Avatar utente corrente
+    $user_id = get_current_user_id();
+    $av_url  = get_avatar_url($user_id, ['size' => 64, 'default' => 'mp']);
+
     ob_start();
     ?>
     <style>
@@ -95,6 +99,19 @@ function pz_nav_render($atts) {
       line-height:1 !important;
       text-transform:none !important;
     }
+    /* Avatar tab account */
+    .pz-nav-avatar{
+      width:24px !important;height:24px !important;
+      border-radius:50% !important;
+      object-fit:cover !important;
+      border:2px solid transparent !important;
+      transition:border-color .15s ease !important;
+      display:block !important;
+      flex-shrink:0 !important;
+    }
+    .pz-nav a.is-active .pz-nav-avatar{
+      border-color:#1FB856 !important;
+    }
     </style>
 
     <nav class="pz-nav" aria-label="Menu principale">
@@ -120,7 +137,14 @@ function pz_nav_render($atts) {
         </a>
 
         <a href="<?php echo esc_url($url($routes['account'])); ?>" class="<?php echo $active === 'account' ? 'is-active' : ''; ?>">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <img
+            class="pz-nav-avatar"
+            src="<?php echo esc_url($av_url); ?>"
+            alt="Profilo"
+            width="24"
+            height="24"
+            loading="lazy"
+          >
           <span class="pz-nav-label">Account</span>
         </a>
 
