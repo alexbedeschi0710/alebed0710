@@ -64,9 +64,7 @@ add_shortcode('pz_create_public', 'pz_cpb_render');
 function pz_cpb_render($atts) {
 
     if (!is_user_logged_in()) {
-        return '<div class="pz-cpb-login-wall">'
-             . 'Per creare una partita devi <a href="' . esc_url(wp_login_url(get_permalink())) . '">accedere</a>.'
-             . '</div>';
+        return pz_render_login_wall('', 'Accedi per prenotare', 'Per creare una partita pubblica devi prima effettuare il login.', 'login/');
     }
 
     $services = pz_cpb_services();
@@ -921,4 +919,3 @@ function pz_cpb_ajax_book() {
         'price'          => $price,
     ]);
 }
-
