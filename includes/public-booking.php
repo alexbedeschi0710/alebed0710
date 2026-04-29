@@ -260,7 +260,7 @@ function pz_cpb_render($atts) {
             </button>
             <p class="pz-g-title">Crea Partita Pubblica</p>
         </div>
-        <p class="pz-g-sub">Scegli livello, data, ora e campo. Gli altri giocatori potranno aggregarsi.</p>
+        <p class="pz-g-sub">Scegli livello, data, ora e campo.<br /> Gli altri giocatori potranno aggregarsi.</p>
 
         <!-- CARD -->
         <div class="pz-cpb-card">
