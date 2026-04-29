@@ -159,13 +159,7 @@ ob_start();
 #pzMbWrap,#pzMbWrap *{box-sizing:border-box !important;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif !important;}
 #pzMbWrap{max-width:640px !important;margin:0 auto !important;padding:0 0 100px !important;color:#161B2E !important;background:transparent !important;}
 
-/* Header */
-.pz-mb-header{display:flex !important;align-items:center !important;position:relative !important;min-height:44px !important;margin-bottom:6px !important;}
-.pz-mb-back{width:44px !important;height:44px !important;background:#FFFFFF !important;border:1.5px solid #D9DCE3 !important;border-radius:50% !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;padding:0 !important;flex-shrink:0 !important;position:relative !important;z-index:1 !important;text-decoration:none !important;transition:background .15s ease,border-color .15s ease !important;}
-.pz-mb-back svg{stroke:#8B92A5 !important;fill:none !important;width:18px !important;height:18px !important;}
-.pz-mb-back:hover{background:#F4F5F8 !important;border-color:#8B92A5 !important;}
-.pz-mb-title{position:absolute !important;left:0 !important;right:0 !important;font-size:19px !important;font-weight:700 !important;letter-spacing:-0.02em !important;text-align:center !important;pointer-events:none !important;margin:0 !important;color:#161B2E !important;background:transparent !important;text-transform:none !important;}
-.pz-mb-sub{font-size:14px !important;color:#8B92A5 !important;line-height:1.5 !important;margin:0 0 24px !important;padding:0 !important;background:transparent !important;}
+/* → header/back/title/sub: vedi pz-global.php (.pz-g-*) */
 
 /* Sezione */
 .pz-mb-section-title{font-size:13px !important;font-weight:700 !important;letter-spacing:.06em !important;text-transform:uppercase !important;color:#8B92A5 !important;margin:0 0 12px !important;padding:0 !important;}
@@ -261,13 +255,13 @@ ob_start();
 <div id="pzMbWrap">
 
 <!-- HEADER -->
-<div class="pz-mb-header">
-<a href="javascript:history.back()" class="pz-mb-back" aria-label="Indietro">
+<div class="pz-g-header">
+<a href="javascript:history.back()" class="pz-g-back" aria-label="Indietro">
 <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
 </a>
-<p class="pz-mb-title">Le mie prenotazioni</p>
+<p class="pz-g-title">Le mie prenotazioni</p>
 </div>
-<p class="pz-mb-sub">Le tue partite passate e future.</p>
+<p class="pz-g-sub">Le tue partite passate e future.</p>
 
 <!-- FUTURE -->
 <p class="pz-mb-section-title">In programma</p>
