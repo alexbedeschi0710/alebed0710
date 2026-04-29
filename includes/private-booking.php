@@ -130,7 +130,7 @@ function pz_pb_render($atts) {
       font-size:19px;font-weight:700;letter-spacing:-0.02em;
       text-align:center;pointer-events:none;margin:0;
     }
-    .pz-pb-subtitle{font-size:14px;color:var(--pz-muted);line-height:1.5;margin:0 0 22px;padding:0 4px}
+    .pz-pb-subtitle{font-size:14px;color:var(--pz-muted);line-height:1.5;margin:0 0 22px;padding:0 4px;text-align:center;}
 
     /* Card */
     .pz-pb-card{
