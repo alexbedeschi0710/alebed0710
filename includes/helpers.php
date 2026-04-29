@@ -155,27 +155,30 @@ add_shortcode('pz_debug_nav', function() {
  * ============================================================ */
 
 /**
- * @param string $icon      Emoji icona (es. '💰')
- * @param string $title     Titolo (es. 'Il tuo borsellino')
+ * @param string $icon      Emoji icona — passa '' per nasconderla
+ * @param string $title     Titolo
  * @param string $subtitle  Testo descrittivo
  * @param string $login_url Path pagina login (default: /inizio/login/)
  */
-function pz_render_login_wall( $icon = '🔒', $title = 'Accesso richiesto', $subtitle = 'Effettua il login per continuare.', $login_url = '/inizio/login/' ) {
-    $url = esc_url( home_url( $login_url ) );
+function pz_render_login_wall( $icon = '', $title = 'Accesso richiesto', $subtitle = 'Effettua il login per continuare.', $login_url = '/inizio/login/' ) {
+    $url          = esc_url( home_url( $login_url ) );
+    $url_register = esc_url( home_url( rtrim( $login_url, '/' ) . '/#register' ) );
     ob_start();
     ?>
     <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px 48px;text-align:center;min-height:320px">
 
+        <?php if ( $icon !== '' ): ?>
         <div style="width:72px;height:72px;background:#E8F8EE;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px"><?php echo $icon; ?></div>
+        <?php endif; ?>
 
-        <h2 style="font-size:22px;font-weight:700;color:#161B2E;margin:0 0 10px"><?php echo esc_html( $title ); ?></h2>
+        <h2 style="font-size:28px;font-weight:800;color:#161B2E;margin:0 0 10px;letter-spacing:-0.02em"><?php echo esc_html( $title ); ?></h2>
 
         <p style="font-size:15px;color:#8B92A5;margin:0 0 32px;max-width:300px;line-height:1.6"><?php echo esc_html( $subtitle ); ?></p>
 
         <a href="<?php echo $url; ?>" style="display:inline-block;background:#1FB856;color:#fff !important;font-size:15px;font-weight:700;text-decoration:none !important;padding:14px 40px;border-radius:12px;letter-spacing:0.3px">Accedi</a>
 
         <p style="margin:20px 0 0;font-size:13px;color:#8B92A5">
-            Non hai un account? <a href="<?php echo $url; ?>" style="color:#1FB856;font-weight:600;text-decoration:none">Registrati</a>
+            Non hai un account? <a href="<?php echo $url_register; ?>" style="color:#1FB856;font-weight:600;text-decoration:none">Registrati</a>
         </p>
     </div>
     <?php
