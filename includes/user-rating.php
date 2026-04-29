@@ -45,9 +45,7 @@ function pz_ur_inject_modal() {
  * ============================================================ */
 add_shortcode('pz_rating_setup', function() {
     if (!is_user_logged_in()) {
-        return '<div style="padding:20px;background:#f8d7da;border-radius:12px;font-family:\'DM Sans\',-apple-system,sans-serif">'
-             . '❌ Per impostare il livello devi <a href="' . esc_url(wp_login_url(get_permalink())) . '">accedere</a>.'
-             . '</div>';
+        return pz_render_login_wall('', 'Il mio livello', 'Accedi per impostare il tuo livello di gioco.', 'login/');
     }
     return pz_ur_render(false);
 });
@@ -499,4 +497,3 @@ function pz_ur_admin_save($user_id) {
         delete_user_meta($user_id, 'pz_user_rating');
     }
 }
-
