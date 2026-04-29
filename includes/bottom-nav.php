@@ -23,12 +23,9 @@ function pz_nav_routes() {
  *  HELPER AVATAR — legge Simple Local Avatars, poi fallback
  * ============================================================ */
 function pz_get_user_avatar_url($user_id, $size = 64) {
-    // Simple Local Avatars salva un array con chiavi per dimensione
     $meta = get_user_meta($user_id, 'simple_local_avatar', true);
     if (!empty($meta) && is_array($meta)) {
-        // Prova prima la dimensione richiesta, poi la più grande disponibile
         if (!empty($meta[$size])) return $meta[$size];
-        // Le chiavi sono dimensioni numeriche: prendi la più grande
         $biggest = 0;
         $url     = '';
         foreach ($meta as $k => $v) {
@@ -38,11 +35,9 @@ function pz_get_user_avatar_url($user_id, $size = 64) {
             }
         }
         if ($url) return $url;
-        // Fallback: primo valore dell'array
         $first = reset($meta);
         if ($first && is_string($first)) return $first;
     }
-    // Fallback Gravatar / plugin attivi
     return get_avatar_url($user_id, ['size' => $size, 'default' => 'mp']);
 }
 
@@ -195,6 +190,7 @@ function pz_nav_auto_inject() {
     $triggers = [
         'pz_wizard', 'pz_book_private', 'pz_create_public',
         'pz_my_bookings', 'pzlobby', 'pz_wallet_balance', 'pz_rating_setup',
+        'pz_account',
     ];
 
     $found = false;
