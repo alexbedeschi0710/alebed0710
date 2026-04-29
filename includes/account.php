@@ -2,20 +2,11 @@
 /**
  * PadelZero — Pagina Account
  * Shortcode [pz_account]
+ *
+ * pz_get_user_avatar_url() e' definita in bottom-nav.php
  */
 
 if (!defined('ABSPATH')) exit;
-
-/* ============================================================
- *  HELPER — URL avatar
- * ============================================================ */
-function pz_get_user_avatar_url($user_id = null) {
-    if (!$user_id) $user_id = get_current_user_id();
-    if (!$user_id) return '';
-    $url = get_user_meta($user_id, 'pz_avatar', true);
-    if ($url && filter_var($url, FILTER_VALIDATE_URL)) return $url;
-    return '';
-}
 
 /* ============================================================
  *  SHORTCODE [pz_account]
@@ -31,20 +22,16 @@ add_shortcode('pz_account', function() {
     $lname   = get_user_meta($uid, 'last_name', true);
     $phone   = get_user_meta($uid, 'pz_phone', true);
     $email   = $user->user_email;
-    $avatar  = pz_get_user_avatar_url($uid);
+    $avatar  = pz_get_user_avatar_url($uid, 128);
 
     // Iniziale per SVG placeholder
-    $initial = strtoupper(substr($fname ?: $user->display_name, 0, 1));
-    if (!$initial) $initial = '?';
-
-    // SVG placeholder come variabile PHP pulita
+    $initial     = strtoupper(substr($fname ?: $user->display_name, 0, 1)) ?: '?';
     $placeholder = 'data:image/svg+xml;charset=UTF-8,' . rawurlencode(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
         . '<rect fill="#E8F8EE" width="64" height="64" rx="32"/>'
         . '<text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#1FB856" font-size="28" font-family="Arial">' . $initial . '</text>'
         . '</svg>'
     );
-
     $avatar_src = $avatar ?: $placeholder;
 
     // Dati livello
