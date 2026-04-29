@@ -24,7 +24,6 @@ add_shortcode('pz_account', function() {
     $email   = $user->user_email;
     $avatar  = pz_get_user_avatar_url($uid, 128);
 
-    // Iniziale per SVG placeholder
     $initial     = strtoupper(substr($fname ?: $user->display_name, 0, 1)) ?: '?';
     $placeholder = 'data:image/svg+xml;charset=UTF-8,' . rawurlencode(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
@@ -34,7 +33,6 @@ add_shortcode('pz_account', function() {
     );
     $avatar_src = $avatar ?: $placeholder;
 
-    // Dati livello
     $levels  = pz_get_all_levels();
     $current = pz_get_user_rating($uid);
 
@@ -120,11 +118,21 @@ add_shortcode('pz_account', function() {
     .pza-level-btn.active { border-color: #1FB856 !important; background: #FAFFF4 !important; }
     .pza-level-dot  { width: 10px !important; height: 10px !important; border-radius: 50% !important; flex-shrink: 0 !important; }
     .pza-level-name { font-size: 13px !important; font-weight: 600 !important; color: #161B2E !important; flex: 1 !important; }
+    .pza-level-range {
+        font-size: 11px !important; font-weight: 600 !important;
+        color: #8B92A5 !important; letter-spacing: .02em !important;
+        background: #F4F5F8 !important; border-radius: 6px !important;
+        padding: 2px 7px !important; flex-shrink: 0 !important;
+    }
+    .pza-level-btn.active .pza-level-range {
+        background: #E2F7EA !important; color: #1FB856 !important;
+    }
     .pza-level-check {
         width: 18px !important; height: 18px !important; border-radius: 50% !important;
         border: 1.5px solid #D9DCE3 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
         transition: background .15s, border-color .15s !important;
+        flex-shrink: 0 !important;
     }
     .pza-level-btn.active .pza-level-check { background: #1FB856 !important; border-color: #1FB856 !important; }
     .pza-level-btn.active .pza-level-check::after {
@@ -208,18 +216,20 @@ add_shortcode('pz_account', function() {
             </div>
         </div>
 
-        <!-- 2. Livello di gioco compatto -->
+        <!-- 2. Livello di gioco -->
         <div class="pza-section">
             <p class="pza-section-title">Livello di gioco</p>
             <div class="pza-level-compact">
                 <?php foreach ($levels as $lvl):
                     $is_active = $current && ($current >= $lvl['rating_min'] && $current <= $lvl['rating_max']);
+                    $range_label = number_format($lvl['rating_min'], 1) . ' – ' . number_format($lvl['rating_max'], 1);
                 ?>
                 <button type="button"
                         class="pza-level-btn<?php echo $is_active ? ' active' : ''; ?>"
                         data-rating="<?php echo (float)$lvl['rating_default']; ?>">
                     <span class="pza-level-dot" style="background:<?php echo esc_attr($lvl['color']); ?>"></span>
                     <span class="pza-level-name"><?php echo esc_html($lvl['label']); ?></span>
+                    <span class="pza-level-range"><?php echo esc_html($range_label); ?></span>
                     <span class="pza-level-check"></span>
                 </button>
                 <?php endforeach; ?>
