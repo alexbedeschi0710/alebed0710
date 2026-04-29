@@ -20,9 +20,7 @@ add_shortcode('pz_my_bookings', 'pz_mb_render');
 function pz_mb_render($atts) {
 
     if (!is_user_logged_in()) {
-        return '<div style="padding:20px;background:#f8d7da;border-radius:12px;font-family:\'DM Sans\',-apple-system,sans-serif">'
-             . '❌ Effettua il <a href="' . esc_url(wp_login_url(get_permalink())) . '">login</a> per vedere le tue prenotazioni.'
-             . '</div>';
+        return pz_render_login_wall('', 'Le mie prenotazioni', 'Accedi per visualizzare le tue prenotazioni.', 'login/');
     }
 
     global $wpdb;
