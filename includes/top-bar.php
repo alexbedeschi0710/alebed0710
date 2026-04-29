@@ -53,21 +53,17 @@ function pz_top_bar_render( $atts = [] ) {
     $first_name  = esc_html( $user->first_name ?: $user->display_name );
     $account_url = esc_url( pz_app_url( 'account/' ) );
 
-    // Iniziali come fallback
     $initials = '';
     if ( $user->first_name ) $initials .= mb_strtoupper( mb_substr( $user->first_name, 0, 1 ) );
     if ( $user->last_name )  $initials .= mb_strtoupper( mb_substr( $user->last_name,  0, 1 ) );
     if ( ! $initials )       $initials  = mb_strtoupper( mb_substr( $user->display_name, 0, 2 ) );
 
-    // Foto profilo: get_avatar_url() usa Gravatar + plugin avatar (es. Simple Local Avatars)
-    // size 64 = 32px * 2x retina
     $avatar_url = get_avatar_url( $user->ID, [
         'size'          => 64,
-        'default'       => 'blank',   // se non c'e' foto, ritorna URL blank invece del mostro di gravatar
+        'default'       => 'blank',
         'force_default' => false,
     ] );
 
-    // Controlla se l'URL e' realmente una foto o e' il placeholder blank di gravatar
     $has_photo = $avatar_url && strpos( $avatar_url, 'd=blank' ) === false && strpos( $avatar_url, 'gravatar.com/avatar/00000000000000000000000000000000' ) === false;
 
     $show_back  = filter_var( $atts['show_back'], FILTER_VALIDATE_BOOLEAN );
@@ -174,7 +170,6 @@ function pz_top_bar_render( $atts = [] ) {
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
     }
-    /* Avatar: contenitore comune */
     .pz-top-bar-avatar {
         width: 32px !important; height: 32px !important;
         border-radius: 50% !important;
@@ -187,7 +182,6 @@ function pz_top_bar_render( $atts = [] ) {
         background: #E8F8EE !important;
         box-sizing: border-box !important;
     }
-    /* Foto profilo */
     .pz-top-bar-avatar img {
         width: 100% !important;
         height: 100% !important;
@@ -195,7 +189,6 @@ function pz_top_bar_render( $atts = [] ) {
         display: block !important;
         border-radius: 50% !important;
     }
-    /* Iniziali fallback */
     .pz-top-bar-avatar-initials {
         font-size: 12px !important;
         font-weight: 700 !important;
@@ -282,7 +275,7 @@ function pz_top_bar_auto_inject() {
     $triggers = [
         'pz_wizard', 'pz_book_private', 'pz_create_public',
         'pz_my_bookings', 'pzlobby', 'pz_wallet_balance', 'pz_rating_setup',
-        'pz_bottom_nav',
+        'pz_bottom_nav', 'pz_account',
     ];
 
     $found = false;
