@@ -456,42 +456,19 @@ add_shortcode('pzlobby', function($atts) {
         .pz-lb-select{min-width:0 !important;}
         .pz-lb-modal-inner{border-radius:24px 24px 0 0 !important;}
     }
-    /* Header */
-    .pz-lb-header{display:flex !important;align-items:center !important;position:relative !important;min-height:44px !important;margin-bottom:6px !important;}
-    .pz-lb-back{
-        width:44px !important;height:44px !important;background:#FFFFFF !important;
-        border:1.5px solid #D9DCE3 !important;border-radius:50% !important;
-        display:flex !important;align-items:center !important;justify-content:center !important;
-        cursor:pointer !important;padding:0 !important;flex-shrink:0 !important;
-        position:relative !important;z-index:1 !important;text-decoration:none !important;
-        transition:background .15s ease,border-color .15s ease !important;
-    }
-    .pz-lb-back svg{stroke:#8B92A5 !important;fill:none !important;width:18px !important;height:18px !important;}
-    .pz-lb-back:hover{background:#F4F5F8 !important;border-color:#8B92A5 !important;}
-    .pz-lb-title{
-        position:absolute !important;left:0 !important;right:0 !important;
-        font-size:19px !important;font-weight:700 !important;letter-spacing:-0.02em !important;
-        text-align:center !important;pointer-events:none !important;margin:0 !important;
-        color:#161B2E !important;background:transparent !important;text-transform:none !important;
-    }
-    .pz-lb-sub{
-        font-size:14px !important;color:#8B92A5 !important;line-height:1.5 !important;
-        margin:0 0 22px !important;padding:0 !important;
-        text-align:center !important;
-        background:transparent !important;text-transform:none !important;
-    }
+    /* → header, back, title, sub: vedi pz-global.php (.pz-g-*) */
     </style>
 
     <div id="pzLobbyWrap">
 
         <!-- HEADER -->
-        <div class="pz-lb-header">
-            <a href="javascript:history.back()" class="pz-lb-back" aria-label="Indietro">
+        <div class="pz-g-header">
+            <a href="javascript:history.back()" class="pz-g-back" aria-label="Indietro">
                 <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </a>
-            <p class="pz-lb-title">Partite pubbliche</p>
+            <p class="pz-g-title">Partite pubbliche</p>
         </div>
-        <p class="pz-lb-sub">Trova una partita del tuo livello e unisciti.</p>
+        <p class="pz-g-sub">Trova una partita del tuo livello e unisciti.</p>
 
         <!-- FILTRI -->
         <div class="pz-lb-filters">
