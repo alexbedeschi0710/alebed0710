@@ -17,12 +17,10 @@ add_action( 'after_setup_theme', 'pz_maybe_hide_admin_bar' );
 
 function pz_maybe_hide_admin_bar() {
     if ( ! is_user_logged_in() ) return;
-    // Gli admin mantengono la loro admin bar
     if ( current_user_can( 'manage_options' ) ) return;
     show_admin_bar( false );
 }
 
-// CSS di sicurezza: rimuove l'admin bar e il margin-top che WP aggiunge al body/html
 add_action( 'wp_head', 'pz_remove_admin_bar_css', 99 );
 
 function pz_remove_admin_bar_css() {
@@ -46,20 +44,31 @@ function pz_top_bar_render( $atts = [] ) {
     if ( ! is_user_logged_in() ) return '';
 
     $atts = shortcode_atts( [
-        'show_back'  => 'false',   // 'true' mostra freccia back
-        'back_url'   => '',        // URL esplicito per il back (vuoto = history.back())
-        'title'      => '',        // Titolo centrale opzionale
+        'show_back'  => 'false',
+        'back_url'   => '',
+        'title'      => '',
     ], $atts );
 
-    $user       = wp_get_current_user();
-    $first_name = esc_html( $user->first_name ?: $user->display_name );
+    $user        = wp_get_current_user();
+    $first_name  = esc_html( $user->first_name ?: $user->display_name );
     $account_url = esc_url( pz_app_url( 'account/' ) );
 
-    // Avatar: iniziali
+    // Iniziali come fallback
     $initials = '';
     if ( $user->first_name ) $initials .= mb_strtoupper( mb_substr( $user->first_name, 0, 1 ) );
     if ( $user->last_name )  $initials .= mb_strtoupper( mb_substr( $user->last_name,  0, 1 ) );
     if ( ! $initials )       $initials  = mb_strtoupper( mb_substr( $user->display_name, 0, 2 ) );
+
+    // Foto profilo: get_avatar_url() usa Gravatar + plugin avatar (es. Simple Local Avatars)
+    // size 64 = 32px * 2x retina
+    $avatar_url = get_avatar_url( $user->ID, [
+        'size'          => 64,
+        'default'       => 'blank',   // se non c'e' foto, ritorna URL blank invece del mostro di gravatar
+        'force_default' => false,
+    ] );
+
+    // Controlla se l'URL e' realmente una foto o e' il placeholder blank di gravatar
+    $has_photo = $avatar_url && strpos( $avatar_url, 'd=blank' ) === false && strpos( $avatar_url, 'gravatar.com/avatar/00000000000000000000000000000000' ) === false;
 
     $show_back  = filter_var( $atts['show_back'], FILTER_VALIDATE_BOOLEAN );
     $back_url   = esc_url( $atts['back_url'] );
@@ -68,12 +77,9 @@ function pz_top_bar_render( $atts = [] ) {
     ob_start();
     ?>
     <style>
-    /* ── PZ Top Bar ─────────────────────────────────────── */
     .pz-top-bar {
         position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
+        top: 0 !important; left: 0 !important; right: 0 !important;
         width: 100% !important;
         height: 56px !important;
         background: #FFFFFF !important;
@@ -93,7 +99,6 @@ function pz_top_bar_render( $atts = [] ) {
         padding: 0 16px !important;
         position: relative !important;
     }
-    /* Sinistra: logo oppure back */
     .pz-top-bar-left {
         display: flex !important;
         align-items: center !important;
@@ -117,16 +122,12 @@ function pz_top_bar_render( $atts = [] ) {
         letter-spacing: -0.03em !important;
         line-height: 1 !important;
     }
-    .pz-top-bar-logo-text span {
-        color: #1FB856 !important;
-    }
-    /* Back button */
+    .pz-top-bar-logo-text span { color: #1FB856 !important; }
     .pz-top-bar-back {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        width: 36px !important;
-        height: 36px !important;
+        width: 36px !important; height: 36px !important;
         background: #FFFFFF !important;
         border: 1.5px solid #D9DCE3 !important;
         border-radius: 50% !important;
@@ -135,15 +136,11 @@ function pz_top_bar_render( $atts = [] ) {
         flex-shrink: 0 !important;
     }
     .pz-top-bar-back svg {
-        width: 18px !important;
-        height: 18px !important;
-        stroke: #8B92A5 !important;
-        stroke-width: 2 !important;
+        width: 18px !important; height: 18px !important;
+        stroke: #8B92A5 !important; stroke-width: 2 !important;
         fill: none !important;
-        stroke-linecap: round !important;
-        stroke-linejoin: round !important;
+        stroke-linecap: round !important; stroke-linejoin: round !important;
     }
-    /* Titolo centrale */
     .pz-top-bar-title {
         position: absolute !important;
         left: 50% !important;
@@ -155,7 +152,6 @@ function pz_top_bar_render( $atts = [] ) {
         pointer-events: none !important;
         white-space: nowrap !important;
     }
-    /* Destra: avatar + nome */
     .pz-top-bar-right {
         display: flex !important;
         align-items: center !important;
@@ -178,22 +174,35 @@ function pz_top_bar_render( $atts = [] ) {
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
     }
+    /* Avatar: contenitore comune */
     .pz-top-bar-avatar {
-        width: 32px !important;
-        height: 32px !important;
+        width: 32px !important; height: 32px !important;
         border-radius: 50% !important;
-        background: #E8F8EE !important;
         border: 1.5px solid #D9DCE3 !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        background: #E8F8EE !important;
+        box-sizing: border-box !important;
+    }
+    /* Foto profilo */
+    .pz-top-bar-avatar img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+        border-radius: 50% !important;
+    }
+    /* Iniziali fallback */
+    .pz-top-bar-avatar-initials {
         font-size: 12px !important;
         font-weight: 700 !important;
         color: #1FB856 !important;
-        flex-shrink: 0 !important;
         letter-spacing: 0 !important;
+        line-height: 1 !important;
     }
-    /* Spacer: compensa l'altezza della top bar sul contenuto */
     .pz-top-bar-spacer {
         height: 56px !important;
         display: block !important;
@@ -203,7 +212,6 @@ function pz_top_bar_render( $atts = [] ) {
     <div class="pz-top-bar">
         <div class="pz-top-bar-inner">
 
-            <!-- Sinistra: logo o back -->
             <div class="pz-top-bar-left">
                 <?php if ( $show_back ) : ?>
                     <?php if ( $back_url ) : ?>
@@ -215,7 +223,6 @@ function pz_top_bar_render( $atts = [] ) {
                     </a>
                 <?php else : ?>
                     <a href="<?php echo esc_url( pz_app_url() ); ?>" class="pz-top-bar-logo" aria-label="PadelZero Home">
-                        <!-- Logo SVG inline -->
                         <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <rect width="32" height="32" rx="8" fill="#1FB856"/>
                             <path d="M8 22 C8 22 10 10 16 10 C20 10 22 13 20 17 C18 21 13 21 11 18" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
@@ -226,22 +233,32 @@ function pz_top_bar_render( $atts = [] ) {
                 <?php endif; ?>
             </div>
 
-            <!-- Centro: titolo opzionale -->
             <?php if ( $page_title ) : ?>
                 <span class="pz-top-bar-title"><?php echo $page_title; ?></span>
             <?php endif; ?>
 
-            <!-- Destra: nome + avatar -->
             <div class="pz-top-bar-right">
                 <a href="<?php echo $account_url; ?>" class="pz-top-bar-user" aria-label="Il tuo account">
                     <span class="pz-top-bar-name"><?php echo $first_name; ?></span>
-                    <div class="pz-top-bar-avatar" aria-hidden="true"><?php echo esc_html( $initials ); ?></div>
+                    <div class="pz-top-bar-avatar">
+                        <?php if ( $has_photo ) : ?>
+                            <img
+                                src="<?php echo esc_url( $avatar_url ); ?>"
+                                alt="<?php echo esc_attr( $user->display_name ); ?>"
+                                width="32" height="32"
+                                loading="eager"
+                                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                            />
+                            <span class="pz-top-bar-avatar-initials" style="display:none"><?php echo esc_html( $initials ); ?></span>
+                        <?php else : ?>
+                            <span class="pz-top-bar-avatar-initials"><?php echo esc_html( $initials ); ?></span>
+                        <?php endif; ?>
+                    </div>
                 </a>
             </div>
 
         </div>
     </div>
-    <!-- Spacer per non sovrapporre il contenuto -->
     <div class="pz-top-bar-spacer"></div>
     <?php
     return ob_get_clean();
@@ -249,22 +266,19 @@ function pz_top_bar_render( $atts = [] ) {
 
 /* ============================================================
  *  3. AUTO-INJECT nel wp_body_open
- *     Inietta la top bar su tutte le pagine con shortcode PZ
  * ============================================================ */
 add_action( 'wp_body_open', 'pz_top_bar_auto_inject', 1 );
 
 function pz_top_bar_auto_inject() {
     if ( ! is_user_logged_in() ) return;
-    if ( current_user_can( 'manage_options' ) ) return; // gli admin usano la loro barra
+    if ( current_user_can( 'manage_options' ) ) return;
     if ( ! is_singular() ) return;
 
     global $post;
     if ( ! $post ) return;
 
-    // Non iniettare se lo shortcode è già usato manualmente
     if ( has_shortcode( $post->post_content, 'pz_top_bar' ) ) return;
 
-    // Inietta solo sulle pagine del plugin
     $triggers = [
         'pz_wizard', 'pz_book_private', 'pz_create_public',
         'pz_my_bookings', 'pzlobby', 'pz_wallet_balance', 'pz_rating_setup',
