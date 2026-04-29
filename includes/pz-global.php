@@ -30,7 +30,7 @@ function pz_global_styles() {
 .pz-g-wrap {
   max-width: 480px !important;
   margin: 0 auto !important;
-  padding: 0 0 160px !important;
+  padding: 0 18px 160px !important;
   font-family: 'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif !important;
   color: #161B2E !important;
   -webkit-font-smoothing: antialiased !important;
@@ -50,7 +50,6 @@ function pz_global_styles() {
   position: relative !important;
   min-height: 44px !important;
   margin-bottom: 14px !important;
-  padding: 0 18px !important;
 }
 
 /* ============================================================
@@ -115,7 +114,7 @@ function pz_global_styles() {
   color: #8B92A5 !important;
   line-height: 1.5 !important;
   margin: 0 0 22px !important;
-  padding: 0 18px !important;
+  padding: 0 !important;
   background: transparent !important;
   text-transform: none !important;
   text-align: center !important;
