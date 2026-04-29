@@ -100,24 +100,12 @@ function pz_cpb_render($atts) {
     .pz-cpb-login-wall{max-width:480px;margin:30px auto;padding:24px;background:#fff3cd;border:1px solid #ffc107;border-radius:14px;text-align:center;font-family:'DM Sans',sans-serif;}
 
     /* Header */
-    .pz-cpb-header{display:flex !important;align-items:center !important;position:relative !important;min-height:44px !important;margin-bottom:6px !important;}
-    .pz-cpb-back{
-        width:44px !important;height:44px !important;background:#FFFFFF !important;
-        border:1.5px solid #D9DCE3 !important;border-radius:50% !important;
-        display:flex !important;align-items:center !important;justify-content:center !important;
-        cursor:pointer !important;padding:0 !important;flex-shrink:0 !important;
-        position:relative !important;z-index:1 !important;
-        transition:background .15s ease,border-color .15s ease !important;
-    }
-    .pz-cpb-back svg{stroke:#8B92A5 !important;fill:none !important;width:18px !important;height:18px !important;}
-    .pz-cpb-back:hover{background:#F4F5F8 !important;border-color:#8B92A5 !important;}
-    .pz-cpb-title{
-        position:absolute !important;left:0 !important;right:0 !important;
-        font-size:19px !important;font-weight:700 !important;letter-spacing:-0.02em !important;
-        text-align:center !important;pointer-events:none !important;margin:0 !important;
-        color:#161B2E !important;background:transparent !important;text-transform:none !important;
-    }
-    .pz-cpb-sub{font-size:14px !important;color:#8B92A5 !important;line-height:1.5 !important;margin:0 0 22px !important;}
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
+    /* → vedi pz-global.php (.pz-g-*) */
 
     /* Card */
     .pz-cpb-card{
@@ -270,13 +258,13 @@ function pz_cpb_render($atts) {
     <div id="pzCpbWrap">
 
         <!-- HEADER -->
-        <div class="pz-cpb-header">
-            <button class="pz-cpb-back" type="button" aria-label="Indietro" onclick="history.back()">
+        <div class="pz-g-header">
+            <button class="pz-g-back" type="button" aria-label="Indietro" onclick="history.back()">
                 <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </button>
-            <p class="pz-cpb-title">Crea Partita Pubblica</p>
+            <p class="pz-g-title">Crea Partita Pubblica</p>
         </div>
-        <p class="pz-cpb-sub">Scegli livello, data, ora e campo. Gli altri giocatori potranno aggregarsi.</p>
+        <p class="pz-g-sub">Scegli livello, data, ora e campo. Gli altri giocatori potranno aggregarsi.</p>
 
         <!-- CARD -->
         <div class="pz-cpb-card">
