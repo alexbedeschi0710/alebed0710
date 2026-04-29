@@ -171,8 +171,9 @@ add_shortcode('pzlobby', function($atts) {
                         $user = get_user_by('email', $bk->email);
                         if ($user && user_can($user, 'manage_options')) continue;
                         $participants[] = [
-                            'email' => $bk->email,
-                            'name'  => trim(($bk->firstName ?? '') . ' ' . ($bk->lastName ?? '')),
+                            'email'   => $bk->email,
+                            'name'    => trim(($bk->firstName ?? '') . ' ' . ($bk->lastName ?? '')),
+                            'wp_id'   => $user ? $user->ID : 0,
                         ];
                     }
                 }
@@ -314,7 +315,7 @@ add_shortcode('pzlobby', function($atts) {
         width:44px !important;height:44px !important;border-radius:50% !important;
         object-fit:cover !important;border:2px solid #fff !important;
         box-shadow:0 0 0 1.5px #D9DCE3 !important;display:block !important;
-        margin-top:-10px !important;
+        margin-top:-10px !important;background:#F4F5F8 !important;
     }
     .pz-lb-avatar-stack:first-child{margin-top:0 !important;}
     .pz-lb-avatar-empty{
@@ -595,15 +596,31 @@ add_shortcode('pzlobby', function($atts) {
                     $max_slots    = (int)$it['max'];
                     for ($s = 0; $s < $max_slots; $s++):
                         if (isset($participants[$s])) :
-                            $p     = $participants[$s];
-                            $email = is_array($p) ? ($p['email'] ?? '') : $p;
-                            $pname = is_array($p) ? ($p['name']  ?? '') : $p;
-                            $wp_u  = $email ? get_user_by('email', $email) : false;
-                            $av    = $wp_u
-                                ? get_avatar_url($wp_u->ID, ['size' => 56, 'default' => 'mp'])
-                                : get_avatar_url($email,    ['size' => 56, 'default' => 'mp']);
+                            $p      = $participants[$s];
+                            $email  = is_array($p) ? ($p['email'] ?? '') : $p;
+                            $pname  = is_array($p) ? ($p['name']  ?? '') : $p;
+                            $wp_id  = is_array($p) ? ($p['wp_id'] ?? 0)  : 0;
+
+                            // Usa pz_get_user_avatar_url se abbiamo un wp_id, altrimenti SVG placeholder
+                            if ($wp_id) {
+                                $av = pz_get_user_avatar_url($wp_id, 56);
+                            } else {
+                                $av = '';
+                            }
+
+                            // Fallback: SVG con iniziale
+                            if (!$av) {
+                                $initial = strtoupper(substr(trim($pname) ?: $email, 0, 1)) ?: '?';
+                                $av = 'data:image/svg+xml;charset=UTF-8,' . rawurlencode(
+                                    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56">'
+                                    . '<rect fill="#E8F8EE" width="56" height="56" rx="28"/>'
+                                    . '<text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#1FB856" font-size="22" font-family="Arial">'
+                                    . htmlspecialchars($initial)
+                                    . '</text></svg>'
+                                );
+                            }
                     ?>
-                            <img class="pz-lb-avatar-stack" src="<?php echo esc_url($av); ?>" title="<?php echo esc_attr($pname ?: $email); ?>" alt="">
+                            <img class="pz-lb-avatar-stack" src="<?php echo esc_url($av); ?>" title="<?php echo esc_attr($pname ?: $email); ?>" alt="" loading="lazy">
                     <?php else: ?>
                             <span class="pz-lb-avatar-empty" title="Posto libero"></span>
                     <?php endif; endfor; ?>
