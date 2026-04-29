@@ -82,20 +82,59 @@ add_shortcode('pz_account', function() {
         color: #8B92A5 !important; margin: 0 0 14px !important;
     }
     .pza-avatar-row { display: flex !important; align-items: center !important; gap: 16px !important; }
-    .pza-avatar-wrap { position: relative !important; flex-shrink: 0 !important; }
+    .pza-avatar-wrap {
+        position: relative !important;
+        flex-shrink: 0 !important;
+        width: 72px !important;
+        height: 72px !important;
+        display: block !important;
+    }
     .pza-avatar-img {
         width: 72px !important; height: 72px !important;
         border-radius: 50% !important; object-fit: cover !important;
         border: 2px solid #ECEEF2 !important; display: block !important;
     }
-    .pza-avatar-edit {
-        position: absolute !important; bottom: 0 !important; right: 0 !important;
-        width: 24px !important; height: 24px !important;
-        background: #1FB856 !important; border-radius: 50% !important;
-        display: flex !important; align-items: center !important; justify-content: center !important;
-        cursor: pointer !important; border: 2px solid #fff !important;
+    /* Bottone matitina — regole molto specifiche per battere il tema */
+    #pzAccount .pza-avatar-wrap .pza-avatar-edit,
+    #pzAccount .pza-avatar-edit {
+        position: absolute !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        left: auto !important;
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important;
+        min-height: 24px !important;
+        max-width: 24px !important;
+        max-height: 24px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #1FB856 !important;
+        background-color: #1FB856 !important;
+        border-radius: 50% !important;
+        border: 2px solid #fff !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        z-index: 2 !important;
+        box-shadow: none !important;
+        line-height: 1 !important;
+        font-size: 0 !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
     }
-    .pza-avatar-edit svg { stroke: #fff !important; fill: none !important; width: 12px !important; height: 12px !important; }
+    #pzAccount .pza-avatar-edit svg {
+        stroke: #fff !important;
+        fill: none !important;
+        width: 11px !important;
+        height: 11px !important;
+        min-width: 11px !important;
+        min-height: 11px !important;
+        display: block !important;
+        flex-shrink: 0 !important;
+    }
     /* Input nascosti ma accessibili al sistema */
     .pza-file-input {
         position: absolute !important;
@@ -138,6 +177,7 @@ add_shortcode('pz_account', function() {
         font-size: 15px !important; font-weight: 600 !important;
         color: #161B2E !important; cursor: pointer !important; width: 100% !important;
         text-align: left !important;
+        min-height: auto !important; height: auto !important;
     }
     .pza-photo-btn svg { stroke: #1FB856 !important; fill: none !important; width: 22px !important; height: 22px !important; flex-shrink: 0 !important; }
     .pza-photo-cancel {
@@ -146,6 +186,7 @@ add_shortcode('pz_account', function() {
         font-size: 15px !important; font-weight: 700 !important;
         color: #8B92A5 !important; cursor: pointer !important; width: 100% !important;
         margin-top: 4px !important;
+        min-height: auto !important; height: auto !important;
     }
     .pza-level-compact { display: flex !important; flex-direction: column !important; gap: 8px !important; }
     .pza-level-btn {
@@ -154,6 +195,7 @@ add_shortcode('pz_account', function() {
         border-radius: 12px !important; padding: 10px 14px !important;
         cursor: pointer !important; width: 100% !important; text-align: left !important;
         transition: border-color .18s, background .18s !important;
+        min-height: auto !important; height: auto !important;
     }
     .pza-level-btn:hover  { border-color: #161B2E !important; }
     .pza-level-btn.active { border-color: #1FB856 !important; background: #FAFFF4 !important; }
@@ -184,6 +226,7 @@ add_shortcode('pz_account', function() {
         letter-spacing: .04em !important; text-transform: uppercase !important;
         padding: 11px !important; cursor: pointer !important; margin-top: 4px !important;
         transition: background .15s !important;
+        min-height: auto !important; height: auto !important;
     }
     .pza-level-save:disabled { background: #D9DCE3 !important; color: #8B92A5 !important; cursor: not-allowed !important; }
     .pza-level-save:hover:not(:disabled) { background: #8BC41F !important; }
@@ -209,6 +252,7 @@ add_shortcode('pz_account', function() {
         padding: 15px !important; cursor: pointer !important; margin-top: 8px !important;
         transition: background .15s !important;
         box-shadow: 0 4px 14px -4px rgba(31,184,86,.4) !important;
+        min-height: auto !important; height: auto !important;
     }
     .pza-save-btn:hover { background: #18A049 !important; }
     .pza-save-btn:disabled { background: #D9DCE3 !important; color: #8B92A5 !important; box-shadow: none !important; cursor: not-allowed !important; }
@@ -241,7 +285,6 @@ add_shortcode('pz_account', function() {
                     <img id="pzaAvatarImg"
                          src="<?php echo esc_attr($avatar_src); ?>"
                          class="pza-avatar-img" alt="Foto profilo">
-                    <!-- Bottone che apre il menu invece di triggerare direttamente l'input -->
                     <button type="button" class="pza-avatar-edit" id="pzaAvatarEditBtn" aria-label="Cambia foto">
                         <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     </button>
