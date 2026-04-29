@@ -66,7 +66,7 @@ function pz_global_styles() {
   justify-content: center !important;
   cursor: pointer !important;
   box-shadow: none !important;
-  padding: 0 0 0 10px !important;
+  padding: 0 !important;
   flex-shrink: 0 !important;
   position: relative !important;
   z-index: 1 !important;
