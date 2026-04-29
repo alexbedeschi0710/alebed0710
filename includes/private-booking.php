@@ -1,23 +1,29 @@
 <?php
 /**
- * PadelZero - Prenotazione Partita Privata
- * Shortcode: [pz_private_booking]
+ * PadelZero - Booking Partita Privata
+ *
+ * Shortcode:  [pz_book_private]
+ *
+ * Crea direttamente un appointment in Amelia con status='approved'
+ * e un customer_booking collegato all'utente WordPress corrente.
+ *
+ * Pagamento: SOLO IN LOCO (per ora). La prenotazione resta a debito
+ * e l'amministratore la riconcilia in Amelia.
  */
 
 if (!defined('ABSPATH')) exit;
 
-add_shortcode('pz_private_booking', 'pz_pb_render');
-
 /* ============================================================
- *  Costanti
+ *  CONFIG
  * ============================================================ */
-if (!defined('PZ_PB_OPEN_HOUR'))  define('PZ_PB_OPEN_HOUR',  8);
-if (!defined('PZ_PB_CLOSE_HOUR')) define('PZ_PB_CLOSE_HOUR', 22);
-if (!defined('PZ_PB_DAYS_AHEAD')) define('PZ_PB_DAYS_AHEAD', 14);
 
-/* ============================================================
- *  Helper — elenco campi e servizi
- * ============================================================ */
+function pz_pb_services() {
+    return [
+        9  => 60,   // Partita da 1 ora
+        10 => 90,   // Partita da 1 ora e mezza
+    ];
+}
+
 function pz_pb_courts() {
     return [
         2 => 'Campo 1',
@@ -27,39 +33,34 @@ function pz_pb_courts() {
     ];
 }
 
-function pz_pb_services() {
-    // service_id => durata in minuti
-    return [
-        2 => 60,
-        3 => 90,
-    ];
-}
+define('PZ_PB_OPEN_HOUR',   8);
+define('PZ_PB_CLOSE_HOUR', 23);
+define('PZ_PB_DAYS_AHEAD', 14);
 
-function pz_pb_service_prices() {
-    global $wpdb;
-    $prefix = PZ_DB_PREFIX;
-    $ids    = array_keys(pz_pb_services());
-    $ph     = implode(',', array_fill(0, count($ids), '%d'));
-    $rows   = $wpdb->get_results(
-        $wpdb->prepare("SELECT id, price FROM {$prefix}services WHERE id IN ($ph)", $ids)
-    );
-    $out = [];
-    foreach ($rows as $r) $out[(int)$r->id] = (float)$r->price;
-    return $out;
-}
 
 /* ============================================================
- *  Shortcode principale
+ *  SHORTCODE
  * ============================================================ */
+
+add_shortcode('pz_book_private', 'pz_pb_render');
+
 function pz_pb_render($atts) {
 
     if (!is_user_logged_in()) {
-        return pz_render_login_wall('', 'Prenota Partita', 'Accedi per prenotare un campo.', 'login/');
+        return pz_render_login_wall('', 'Accedi per prenotare', 'Per prenotare una partita privata devi prima effettuare il login.', 'login/');
     }
 
-    $courts         = pz_pb_courts();
-    $services       = pz_pb_services();
-    $service_prices = pz_pb_service_prices();
+    $courts        = pz_pb_courts();
+    $services      = pz_pb_services();
+    $service_prices = [];
+
+    global $wpdb;
+    $prefix = PZ_DB_PREFIX;
+    foreach (array_keys($services) as $sid) {
+        $service_prices[$sid] = (float)$wpdb->get_var(
+            $wpdb->prepare("SELECT price FROM {$prefix}services WHERE id = %d", $sid)
+        );
+    }
 
     $config = [
         'ajaxUrl'   => admin_url('admin-ajax.php'),
@@ -70,7 +71,6 @@ function pz_pb_render($atts) {
         'daysAhead' => PZ_PB_DAYS_AHEAD,
     ];
 
-    pz_global_styles();
     ob_start();
     ?>
 
@@ -81,22 +81,56 @@ function pz_pb_render($atts) {
       --pz-green-soft:   #E8F8EE;
       --pz-ink:          #161B2E;
       --pz-muted:        #8B92A5;
-      --pz-border:       #E2E5EC;
+      --pz-line:         #ECEEF2;
+      --pz-line-strong:  #D9DCE3;
+      --pz-bg:           #F4F5F8;
       --pz-white:        #FFFFFF;
-      --pz-radius-lg:    14px;
-      --pz-radius-md:    10px;
-      --pz-radius-sm:    8px;
-      --pz-font:         'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
-    }
+      --pz-radius-lg:    20px;
+      --pz-radius-md:    14px;
+      --pz-radius-sm:    10px;
 
-    /* Login wall */
+      max-width:480px;
+      margin:0 auto;
+      padding:0 0 160px !important;
+      font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+      color:var(--pz-ink);
+      -webkit-font-smoothing:antialiased;
+      position:relative;
+      box-sizing:border-box;
+    }
+    .pz-pb-wrap *,
+    .pz-pb-wrap *::before,
+    .pz-pb-wrap *::after{box-sizing:border-box}
+
     .pz-pb-login-wall{
       max-width:480px;margin:30px auto;padding:24px;
       background:#fff3cd;border:1px solid #ffc107;border-radius:14px;text-align:center;
       font-family:'DM Sans',sans-serif;
     }
 
-    /* → header/back/title/sub: vedi pz-global.php (.pz-g-*) */
+    /* Header */
+    .pz-pb-header{
+      display:flex;align-items:center;
+      position:relative;min-height:44px;margin-bottom:14px;
+    }
+    .pz-pb-back{
+      width:44px !important;height:44px !important;
+      background:#FFFFFF !important;
+      border:1.5px solid #D9DCE3 !important;border-radius:50% !important;
+      display:flex !important;align-items:center !important;justify-content:center !important;
+      cursor:pointer !important;
+      transition:background .15s ease,border-color .15s ease !important;
+      box-shadow:none !important;padding:0 !important;flex-shrink:0 !important;
+      position:relative;z-index:1;
+    }
+    .pz-pb-back svg{stroke:#8B92A5 !important;width:18px !important;height:18px !important;}
+    .pz-pb-back:hover{background:#F4F5F8 !important;border-color:#8B92A5 !important;}
+    .pz-pb-title{
+      position:absolute;left:0;right:0;
+      font-size:19px;font-weight:700;letter-spacing:-0.02em;
+      text-align:center;pointer-events:none;margin:0;
+    }
+    .pz-pb-subtitle{font-size:14px;color:var(--pz-muted);line-height:1.5;margin:0 0 22px;padding:0 4px;text-align:center;}
 
     /* Card */
     .pz-pb-card{
@@ -106,358 +140,488 @@ function pz_pb_render($atts) {
     }
     @keyframes pz-pb-fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    /* Section header */
-    .pz-pb-section{margin-bottom:22px;}
-    .pz-pb-section-title{
-      display:flex;align-items:center;gap:10px;
-      font-size:16px;font-weight:700;color:var(--pz-ink);
-      margin-bottom:14px;
-    }
-    .pz-pb-section-title svg{flex-shrink:0;stroke:var(--pz-ink);}
+    /* Sezioni */
+    .pz-pb-section{margin-bottom:24px}
+    .pz-pb-section:last-child{margin-bottom:8px}
+    .pz-pb-section-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .pz-pb-section-head svg{width:18px;height:18px;stroke:var(--pz-ink);stroke-width:2;fill:none;flex-shrink:0}
+    .pz-pb-section-label{font-size:15px;font-weight:700;letter-spacing:-0.01em}
 
-    /* Date strip */
-    .pz-pb-dates{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
-    .pz-pb-dates::-webkit-scrollbar{display:none;}
-    .pz-pb-day{
-      flex-shrink:0;width:72px;padding:10px 6px;
-      border:1.5px solid var(--pz-border);border-radius:var(--pz-radius-md);
-      background:var(--pz-white);cursor:pointer;text-align:center;
-      transition:all .15s ease;
+    /* Date picker */
+    .pz-pb-dates{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px;scrollbar-width:none}
+    .pz-pb-dates::-webkit-scrollbar{display:none}
+    .pz-pb-date{
+      flex:0 0 auto;width:78px;
+      background:var(--pz-white) !important;color:var(--pz-muted) !important;
+      border:1.5px solid var(--pz-line-strong) !important;border-radius:14px !important;
+      padding:14px 10px 12px;text-align:center;cursor:pointer;
+      transition:transform .15s ease,background .2s ease,color .2s ease,border-color .2s ease;
+      user-select:none;font-family:inherit;box-shadow:none !important;
     }
-    .pz-pb-day.active{background:var(--pz-ink);border-color:var(--pz-ink);}
-    .pz-pb-day-name{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--pz-muted);}
-    .pz-pb-day.active .pz-pb-day-name{color:rgba(255,255,255,.7);}
-    .pz-pb-day-num{font-size:26px;font-weight:800;color:var(--pz-ink);line-height:1.1;}
-    .pz-pb-day.active .pz-pb-day-num{color:#fff;}
-    .pz-pb-day-month{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--pz-muted);}
-    .pz-pb-day.active .pz-pb-day-month{color:rgba(255,255,255,.7);}
+    .pz-pb-date:hover:not(.is-active){transform:translateY(-1px);border-color:var(--pz-ink) !important}
+    .pz-pb-date-dow,.pz-pb-date-mo{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+    .pz-pb-date-day{font-size:24px;font-weight:700;line-height:1.1;margin:6px 0 4px;color:var(--pz-ink) !important;letter-spacing:-0.02em}
+    .pz-pb-date.is-active{background:var(--pz-green) !important;border-color:var(--pz-green) !important;color:#D6F5E0 !important;}
+    .pz-pb-date.is-active .pz-pb-date-day{color:var(--pz-white) !important}
 
-    /* Duration toggle */
-    .pz-pb-duration{display:flex;gap:10px;}
-    .pz-pb-dur{
-      flex:1;padding:13px 10px;border:1.5px solid var(--pz-border);
-      border-radius:var(--pz-radius-md);background:var(--pz-white);
-      font-size:14px;font-weight:600;color:var(--pz-muted);
-      cursor:pointer;text-align:center;transition:all .15s ease;
+    /* Toggle durata */
+    .pz-pb-duration{
+      display:flex;background:var(--pz-bg) !important;
+      border-radius:14px !important;padding:4px;gap:4px;
     }
-    .pz-pb-dur.active{border-color:var(--pz-ink);background:var(--pz-ink);color:#fff;}
-    .pz-pb-dur.disabled-slot{opacity:.4;cursor:not-allowed;}
+    .pz-pb-duration-opt{
+      flex:1;border:none !important;background:transparent !important;padding:11px 12px;
+      font-size:14px;font-weight:600;font-family:inherit;
+      color:var(--pz-muted) !important;border-radius:10px !important;cursor:pointer;
+      transition:background .2s,color .2s,box-shadow .2s;box-shadow:none !important;
+    }
+    .pz-pb-duration-opt.is-active{
+      background:var(--pz-white) !important;color:var(--pz-ink) !important;
+      box-shadow:0 2px 8px -2px rgba(22,27,46,.12) !important;
+    }
 
-    /* Time slots */
-    .pz-pb-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-    .pz-pb-slot{
-      padding:11px 6px;border:1.5px solid var(--pz-border);
-      border-radius:var(--pz-radius-md);background:var(--pz-white);
-      font-size:14px;font-weight:600;color:var(--pz-ink);
-      cursor:pointer;text-align:center;transition:all .15s ease;
+    /* Orari */
+    .pz-pb-times{
+      display:flex;gap:8px;overflow-x:auto;
+      padding:2px 2px 8px;margin:0 -2px;min-height:60px;scrollbar-width:none;
     }
-    .pz-pb-slot.active{border-color:var(--pz-green);background:var(--pz-green-soft);color:var(--pz-green-dark);}
-    .pz-pb-slot.disabled-slot{
-      background:#F6F7FA;color:var(--pz-muted);
-      text-decoration:line-through;cursor:not-allowed;border-color:transparent;
+    .pz-pb-times::-webkit-scrollbar{display:none}
+    .pz-pb-time{
+      flex:0 0 auto;min-width:68px;
+      border:1.5px solid var(--pz-line-strong) !important;
+      background:var(--pz-white) !important;color:var(--pz-ink) !important;
+      font-size:13px;font-weight:600;font-family:inherit;
+      padding:11px 14px;border-radius:10px !important;cursor:pointer;
+      transition:all .15s ease;letter-spacing:-0.01em;box-shadow:none !important;
     }
-    .pz-pb-slots-loading{text-align:center;padding:20px;color:var(--pz-muted);font-size:14px;}
+    .pz-pb-time:hover:not(.is-disabled):not(.is-active){border-color:var(--pz-ink) !important}
+    .pz-pb-time.is-active{background:var(--pz-green) !important;border-color:var(--pz-green) !important;color:var(--pz-white) !important;}
+    .pz-pb-time.is-disabled{background:var(--pz-bg) !important;color:#C5C9D2 !important;border-color:var(--pz-line) !important;cursor:not-allowed;text-decoration:line-through;}
 
-    /* Courts */
-    .pz-pb-courts{display:flex;flex-direction:column;gap:8px;}
+    /* Loader */
+    .pz-pb-loading{flex:1 1 auto;text-align:center;color:var(--pz-muted);padding:18px 0;font-size:13px;font-weight:500;}
+    .pz-pb-loading::before{content:"";display:inline-block;width:14px;height:14px;border:2px solid var(--pz-line-strong);border-top-color:var(--pz-green);border-radius:50%;animation:pz-pb-spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
+    @keyframes pz-pb-spin{to{transform:rotate(360deg)}}
+
+    /* Campi */
+    .pz-pb-courts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .pz-pb-court{
-      padding:14px 16px;border:1.5px solid var(--pz-border);
-      border-radius:var(--pz-radius-md);background:var(--pz-white);
-      font-size:15px;font-weight:600;color:var(--pz-ink);
-      cursor:pointer;text-align:left;transition:all .15s ease;
-      display:flex;align-items:center;justify-content:space-between;
+      border:1.5px solid var(--pz-line-strong) !important;background:var(--pz-white) !important;
+      border-radius:14px !important;padding:22px 12px;
+      font-size:13.5px;font-weight:600;font-family:inherit;color:var(--pz-ink) !important;
+      cursor:pointer;transition:all .15s ease;text-align:center;line-height:1.35;box-shadow:none !important;
     }
-    .pz-pb-court.active{border-color:var(--pz-green);background:var(--pz-green-soft);}
-    .pz-pb-court.disabled-slot{opacity:.4;cursor:not-allowed;background:#F6F7FA;}
-    .pz-pb-court-check{
-      width:20px;height:20px;border-radius:50%;
-      border:1.5px solid var(--pz-border);
-      display:flex;align-items:center;justify-content:center;
-      transition:all .15s ease;flex-shrink:0;
-    }
-    .pz-pb-court.active .pz-pb-court-check{
-      background:var(--pz-green);border-color:var(--pz-green);
-    }
-    .pz-pb-court.active .pz-pb-court-check::after{
-      content:'';display:block;width:6px;height:6px;
-      border-radius:50%;background:#fff;
-    }
+    .pz-pb-court:hover:not(.is-disabled):not(.is-active){border-color:var(--pz-ink) !important}
+    .pz-pb-court.is-active{background:var(--pz-green) !important;border-color:var(--pz-green) !important;color:var(--pz-white) !important;}
+    .pz-pb-court.is-disabled{background:var(--pz-bg) !important;color:#C5C9D2 !important;border-color:var(--pz-line) !important;cursor:not-allowed;}
 
     /* Riepilogo */
     .pz-pb-summary{
-      background:var(--pz-green-soft);border-radius:var(--pz-radius-md);
-      padding:14px 16px;margin-bottom:20px;
-      font-size:14px;color:var(--pz-ink);line-height:1.7;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0;background:var(--pz-green-soft);border-radius:var(--pz-radius-md);
+      font-size:13px;color:var(--pz-ink);font-weight:500;opacity:0;max-height:0;
+      overflow:hidden;margin-top:0;
+      transition:opacity .25s ease,max-height .25s ease,margin-top .25s ease,padding .25s ease;
     }
-    .pz-pb-summary strong{font-weight:700;}
+    .pz-pb-summary.is-visible{opacity:1;max-height:80px;margin-top:14px;padding:14px 16px}
+    .pz-pb-summary-price{font-weight:700;color:var(--pz-green-dark);font-size:15px}
 
-    /* Toast */
-    .pz-pb-toast{
-      position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
-      background:#1c1f26;color:#fff;padding:12px 20px;border-radius:10px;
-      font-size:14px;font-weight:500;white-space:nowrap;
-      opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:9999;
+    /* CTA fisso */
+    .pz-pb-cta-wrap{
+      position:fixed;bottom:64px;left:0;right:0;width:100%;box-sizing:border-box;
+      background:var(--pz-white);border-top:1px solid var(--pz-line);
+      padding:16px 18px;z-index:99;
     }
-    .pz-pb-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .pz-pb-cta-wrap *,.pz-pb-cta-wrap *::before,.pz-pb-cta-wrap *::after{box-sizing:border-box}
+    .pz-pb-cta-inner{max-width:480px;margin:0 auto;width:100%}
+    .pz-pb-cta{
+      width:100%;display:block;box-sizing:border-box;
+      border:none !important;background:var(--pz-green) !important;color:var(--pz-white) !important;
+      font-family:inherit;font-size:15px;font-weight:700;letter-spacing:.08em;
+      text-transform:uppercase;padding:17px;border-radius:14px !important;
+      cursor:pointer;transition:all .2s;
+      box-shadow:0 10px 24px -8px rgba(31,184,86,.55) !important;
+    }
+    .pz-pb-cta:hover:not(:disabled){background:var(--pz-green-dark) !important;transform:translateY(-1px)}
+    .pz-pb-cta:disabled{background:#D5D8DE !important;color:#9097A5 !important;cursor:not-allowed;box-shadow:none !important;}
+
+    /* Overlay successo */
+    .pz-pb-success{position:fixed;inset:0;background:rgba(22,27,46,.55);z-index:999;display:none;align-items:center;justify-content:center;padding:24px;}
+    .pz-pb-success.is-open{display:flex}
+    .pz-pb-success-card{background:#fff;border-radius:var(--pz-radius-lg);max-width:380px;width:100%;padding:34px 26px 26px;text-align:center;animation:pz-pb-fade-up .3s ease both;}
+    .pz-pb-success-icon{width:64px;height:64px;border-radius:50%;background:var(--pz-green-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
+    .pz-pb-success-icon svg{width:32px;height:32px;stroke:var(--pz-green);stroke-width:3;fill:none}
+    .pz-pb-success-title{font-size:20px;font-weight:700;margin:0 0 8px}
+    .pz-pb-success-msg{font-size:14px;color:var(--pz-muted);line-height:1.5;margin:0 0 18px}
+    .pz-pb-success-detail{background:var(--pz-bg);border-radius:var(--pz-radius-md);padding:14px;font-size:13.5px;font-weight:600;margin-bottom:18px;}
+    .pz-pb-success-tag{display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 10px;border-radius:6px;margin-bottom:12px;}
+    .pz-pb-success-btn{width:100%;background:var(--pz-green);color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:14px;border-radius:var(--pz-radius-md);cursor:pointer;transition:background .2s;}
+    .pz-pb-success-btn:hover{background:var(--pz-green-dark)}
+
+    /* Errore */
+    .pz-pb-error{background:#FEE2E2;color:#991B1B;border-radius:var(--pz-radius-sm);padding:10px 14px;font-size:13px;font-weight:500;margin-top:12px;display:none;}
+    .pz-pb-error.is-visible{display:block}
     </style>
 
-    <div class="pz-g-wrap pz-pb-wrap" id="pzPbWrap">
+    <div class="pz-pb-wrap" id="pzPbWrap">
 
       <!-- HEADER -->
-      <div class="pz-g-header">
-        <button class="pz-g-back" type="button" aria-label="Indietro" onclick="history.back()">
+      <div class="pz-pb-header">
+        <button class="pz-pb-back" type="button" aria-label="Indietro" onclick="history.back()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <div class="pz-g-title">Prenota Partita</div>
+        <div class="pz-pb-title">Prenota Partita</div>
       </div>
-      <p class="pz-g-sub">Scegli data, durata, ora e campo per la tua partita privata.</p>
+      <p class="pz-pb-subtitle">Scegli data, durata, ora e campo per la tua partita privata.</p>
 
       <!-- CARD -->
       <div class="pz-pb-card">
 
         <!-- Data -->
         <div class="pz-pb-section">
-          <div class="pz-pb-section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Seleziona data
+          <div class="pz-pb-section-head">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span class="pz-pb-section-label">Seleziona data</span>
           </div>
           <div class="pz-pb-dates" id="pzPbDates"></div>
         </div>
 
         <!-- Durata -->
         <div class="pz-pb-section">
-          <div class="pz-pb-section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Durata
+          <div class="pz-pb-section-head">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="pz-pb-section-label">Durata</span>
           </div>
           <div class="pz-pb-duration" id="pzPbDuration">
-            <?php foreach ($services as $sid => $mins): ?>
-            <button type="button" class="pz-pb-dur" data-dur="<?php echo (int)$mins; ?>">
-              <?php echo $mins === 60 ? '1 ORA' : '1 ORA E MEZZA'; ?>
-            </button>
-            <?php endforeach; ?>
+            <button type="button" class="pz-pb-duration-opt is-active" data-min="60">1 ora</button>
+            <button type="button" class="pz-pb-duration-opt" data-min="90">1 ora e mezza</button>
           </div>
         </div>
 
-        <!-- Orario -->
+        <!-- Ora -->
         <div class="pz-pb-section">
-          <div class="pz-pb-section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Seleziona orario
+          <div class="pz-pb-section-head">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="pz-pb-section-label">Seleziona orario</span>
           </div>
-          <div class="pz-pb-slots" id="pzPbSlots">
-            <div class="pz-pb-slots-loading">Seleziona data e durata</div>
-          </div>
+          <div class="pz-pb-times" id="pzPbTimes"></div>
         </div>
 
         <!-- Campo -->
-        <div class="pz-pb-section" id="pzPbCourtsSection" style="display:none">
-          <div class="pz-pb-section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-            Seleziona campo
+        <div class="pz-pb-section">
+          <div class="pz-pb-section-head">
+            <svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>
+            <span class="pz-pb-section-label">Scegli il campo</span>
           </div>
           <div class="pz-pb-courts" id="pzPbCourts">
             <?php foreach ($courts as $cid => $cname): ?>
-            <button type="button" class="pz-pb-court" data-id="<?php echo (int)$cid; ?>"><?php echo esc_html($cname); ?>
-              <span class="pz-pb-court-check"></span>
-            </button>
+              <button type="button" class="pz-pb-court" data-id="<?php echo (int)$cid; ?>"><?php echo esc_html($cname); ?></button>
             <?php endforeach; ?>
           </div>
         </div>
 
-      </div><!-- /card -->
-
-      <!-- CTA -->
-      <div class="pz-g-cta-wrap">
-        <div class="pz-g-cta-inner">
-          <button type="button" class="pz-g-cta" id="pzPbCta" disabled>PRENOTA</button>
+        <!-- Riepilogo + errori -->
+        <div class="pz-pb-summary" id="pzPbSummary">
+          <div id="pzPbSummaryText">—</div>
+          <div class="pz-pb-summary-price" id="pzPbSummaryPrice">€0</div>
         </div>
+        <div class="pz-pb-error" id="pzPbError"></div>
       </div>
+    </div>
 
-      <!-- Toast -->
-      <div class="pz-pb-toast" id="pzPbToast"></div>
+    <!-- CTA -->
+    <div class="pz-pb-cta-wrap">
+      <div class="pz-pb-cta-inner">
+        <button class="pz-pb-cta" id="pzPbCta" type="button" disabled>Prenota</button>
+      </div>
+    </div>
 
-    </div><!-- /wrap -->
+    <!-- Overlay successo -->
+    <div class="pz-pb-success" id="pzPbSuccess">
+      <div class="pz-pb-success-card">
+        <div class="pz-pb-success-icon">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 class="pz-pb-success-title">Prenotazione confermata!</h3>
+        <div class="pz-pb-success-tag">Pagamento in loco</div>
+        <p class="pz-pb-success-msg">Ti aspettiamo al centro. Ricordati di pagare alla cassa al tuo arrivo.</p>
+        <div class="pz-pb-success-detail" id="pzPbSuccessDetail">—</div>
+        <button class="pz-pb-success-btn" type="button" id="pzPbSuccessBtn">Ok, fatto</button>
+      </div>
+    </div>
 
     <script>
-    var PZ = <?php echo wp_json_encode($config); ?>;
     (function(){
-      var wrap       = document.getElementById('pzPbWrap');
-      var datesEl    = document.getElementById('pzPbDates');
-      var slotsEl    = document.getElementById('pzPbSlots');
-      var courtsWrap = document.getElementById('pzPbCourtsSection');
-      var cta        = document.getElementById('pzPbCta');
-      var toast      = document.getElementById('pzPbToast');
+      var PZ = <?php echo wp_json_encode($config); ?>;
 
-      var state = { date:null, dur:null, time:null, courtId:null, loadingSlots:false };
+      var DOW      = ['DOM','LUN','MAR','MER','GIO','VEN','SAB'];
+      var MONTHS   = ['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
+      var MONTHS_L = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
 
-      /* ---- Dates ---- */
-      (function buildDates(){
-        var today = new Date(); today.setHours(0,0,0,0);
-        var days  = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-        var months= ['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
-        for(var i=0;i<PZ.daysAhead;i++){
-          var d = new Date(today); d.setDate(today.getDate()+i);
-          var btn = document.createElement('button');
-          btn.type='button'; btn.className='pz-pb-day';
-          btn.dataset.date = d.toISOString().slice(0,10);
-          btn.innerHTML =
-            '<div class="pz-pb-day-name">'+days[d.getDay()]+'</div>'+
-            '<div class="pz-pb-day-num">'+d.getDate()+'</div>'+
-            '<div class="pz-pb-day-month">'+months[d.getMonth()]+'</div>';
-          btn.addEventListener('click', function(){
-            document.querySelectorAll('.pz-pb-day').forEach(function(b){b.classList.remove('active');});
-            this.classList.add('active');
-            state.date = this.dataset.date;
-            state.time = null; state.courtId = null;
-            courtsWrap.style.display='none';
-            updateCta();
-            if(state.dur) loadAvailability();
-            else slotsEl.innerHTML='<div class="pz-pb-slots-loading">Seleziona una durata</div>';
+      var state = {
+        dateIso:  null,
+        duration: 60,
+        time:     null,
+        courtId:  null,
+        slots:    null,
+      };
+
+      // ── Date ──────────────────────────────────────────────────────────
+      function buildDates(){
+        var arr = [], now = new Date();
+        for (var i = 0; i < PZ.daysAhead; i++){
+          var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+          arr.push({
+            iso:    d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'),
+            dow:    DOW[d.getDay()],
+            day:    d.getDate(),
+            month:  MONTHS[d.getMonth()],
+            monthL: MONTHS_L[d.getMonth()],
           });
-          datesEl.appendChild(btn);
         }
-        // Seleziona oggi
-        var first = datesEl.querySelector('.pz-pb-day');
-        if(first){ first.click(); }
-      })();
+        return arr;
+      }
+      var DATES = buildDates();
 
-      /* ---- Duration ---- */
+      function renderDates(){
+        var root = document.getElementById('pzPbDates');
+        root.innerHTML = '';
+        DATES.forEach(function(d){
+          var el = document.createElement('button');
+          el.type = 'button';
+          el.className = 'pz-pb-date' + (d.iso === state.dateIso ? ' is-active' : '');
+          el.innerHTML =
+            '<div class="pz-pb-date-dow">' + d.dow + '</div>' +
+            '<div class="pz-pb-date-day">' + d.day + '</div>' +
+            '<div class="pz-pb-date-mo">' + d.month + '</div>';
+          el.addEventListener('click', function(){
+            state.dateIso = d.iso;
+            state.time    = null;
+            state.courtId = null;
+            renderDates();
+            updateDurationToggle();
+            renderCourts();
+            loadAvailability();
+            updateCta();
+          });
+          root.appendChild(el);
+        });
+      }
+
+      // ── Durata ────────────────────────────────────────────────────────
+      function is60MinAllowed(){
+        if (!state.dateIso) return true;
+        var d = new Date(state.dateIso + 'T12:00:00');
+        var dow = d.getDay();
+        if (dow === 0 || dow === 6) return false;
+        if (state.time){
+          var h = parseInt(state.time.split(':')[0], 10);
+          if (h >= 17) return false;
+        }
+        return true;
+      }
+
       function updateDurationToggle(){
-        var btns = document.querySelectorAll('.pz-pb-dur');
-        btns.forEach(function(b){ b.classList.remove('disabled-slot'); });
-        if(!state.date) return;
-        var d    = new Date(state.date+'T00:00:00');
-        var dow  = d.getDay(); // 0=Dom,6=Sab
-        var isWe = (dow===0||dow===6);
-        btns.forEach(function(b){
-          var dur = parseInt(b.dataset.dur);
-          if(dur===60 && isWe) b.classList.add('disabled-slot');
-        });
-      }
-
-      document.querySelectorAll('.pz-pb-dur').forEach(function(b){
-        b.addEventListener('click', function(){
-          if(this.classList.contains('disabled-slot')) return;
-          document.querySelectorAll('.pz-pb-dur').forEach(function(x){x.classList.remove('active');});
-          this.classList.add('active');
-          state.dur  = parseInt(this.dataset.dur);
-          state.time = null; state.courtId = null;
-          courtsWrap.style.display='none';
-          updateCta();
-          if(state.date) loadAvailability();
-        });
-      });
-
-      /* ---- Slots ---- */
-      function loadAvailability(){
-        if(!state.date||!state.dur) return;
-        if(state.loadingSlots) return;
-        state.loadingSlots = true;
-        slotsEl.innerHTML='<div class="pz-pb-slots-loading">Caricamento orari…</div>';
-        var fd = new FormData();
-        fd.append('action','pz_private_availability');
-        fd.append('nonce', PZ.nonce);
-        fd.append('date',  state.date);
-        fd.append('duration', state.dur);
-        fetch(PZ.ajaxUrl,{method:'POST',body:fd})
-          .then(function(r){return r.json();})
-          .then(function(res){
-            state.loadingSlots=false;
-            if(!res.success){slotsEl.innerHTML='<div class="pz-pb-slots-loading">Errore caricamento</div>';return;}
-            renderSlots(res.data.slots);
-          })
-          .catch(function(){
-            state.loadingSlots=false;
-            slotsEl.innerHTML='<div class="pz-pb-slots-loading">Errore di rete</div>';
-          });
-      }
-
-      function renderSlots(slots){
-        slotsEl.innerHTML='';
-        var keys = Object.keys(slots).sort();
-        if(!keys.length){slotsEl.innerHTML='<div class="pz-pb-slots-loading">Nessuno slot disponibile</div>';return;}
-        keys.forEach(function(ts){
-          var s   = slots[ts];
-          var btn = document.createElement('button');
-          btn.type='button';
-          btn.className='pz-pb-slot'+(s.available?'':' disabled-slot');
-          btn.textContent=ts;
-          btn.dataset.time=ts;
-          btn.dataset.courts=JSON.stringify(s.courts);
-          if(s.available){
-            btn.addEventListener('click',function(){
-              document.querySelectorAll('.pz-pb-slot').forEach(function(x){x.classList.remove('active');});
-              this.classList.add('active');
-              state.time    = this.dataset.time;
-              state.courtId = null;
-              renderCourts(JSON.parse(this.dataset.courts));
-              courtsWrap.style.display='block';
-              updateCta();
-            });
+        var allowed = is60MinAllowed();
+        var btn60 = document.querySelector('.pz-pb-duration-opt[data-min="60"]');
+        var btn90 = document.querySelector('.pz-pb-duration-opt[data-min="90"]');
+        if (!allowed){
+          if (state.duration === 60){
+            state.duration = 90;
+            state.time     = null;
+            state.courtId  = null;
           }
-          slotsEl.appendChild(btn);
+          btn60.disabled = true;
+          btn60.style.opacity = '0.35';
+          btn60.title = 'Non disponibile nel weekend e dopo le 17:00';
+        } else {
+          btn60.disabled = false;
+          btn60.style.opacity = '';
+          btn60.title = '';
+        }
+        document.querySelectorAll('.pz-pb-duration-opt').forEach(function(b){
+          b.classList.toggle('is-active', parseInt(b.getAttribute('data-min'), 10) === state.duration);
         });
       }
 
-      /* ---- Courts ---- */
-      function renderCourts(freeCourts){
-        document.querySelectorAll('.pz-pb-court').forEach(function(b){
-          b.classList.remove('active','disabled-slot');
-          var cid = parseInt(b.dataset.id);
-          if(!freeCourts||freeCourts.indexOf(cid)===-1) b.classList.add('disabled-slot');
-        });
-      }
-
-      document.querySelectorAll('.pz-pb-court').forEach(function(b){
-        b.addEventListener('click',function(){
-          if(this.classList.contains('disabled-slot')) return;
-          document.querySelectorAll('.pz-pb-court').forEach(function(x){x.classList.remove('active');});
-          this.classList.add('active');
-          state.courtId = parseInt(this.dataset.id);
-          updateCta();
-        });
-      });
-
-      /* ---- CTA ---- */
-      function updateCta(){
-        cta.disabled = !(state.date && state.dur && state.time && state.courtId);
-      }
-
-      cta.addEventListener('click', function(){
-        if(cta.disabled) return;
-        cta.disabled=true; cta.textContent='Prenotazione in corso…';
-        var fd = new FormData();
-        fd.append('action','pz_private_book');
-        fd.append('nonce',   PZ.nonce);
-        fd.append('date',    state.date);
-        fd.append('time',    state.time);
-        fd.append('duration',state.dur);
-        fd.append('court_id',state.courtId);
-        fetch(PZ.ajaxUrl,{method:'POST',body:fd})
-          .then(function(r){return r.json();})
-          .then(function(res){
-            if(res.success){
-              showToast('✅ Prenotazione confermata!');
-              setTimeout(function(){window.location.href=res.data.redirect||'/app/prenotazioni/';},1500);
-            } else {
-              showToast('❌ '+(res.data||'Errore'));
-              cta.disabled=false; cta.textContent='PRENOTA';
-            }
-          })
-          .catch(function(){
-            showToast('❌ Errore di rete');
-            cta.disabled=false; cta.textContent='PRENOTA';
+      function renderDuration(){
+        document.querySelectorAll('.pz-pb-duration-opt').forEach(function(b){
+          b.addEventListener('click', function(){
+            if (b.disabled) return;
+            var min = parseInt(b.getAttribute('data-min'), 10);
+            if (min === state.duration) return;
+            state.duration = min;
+            state.time     = null;
+            state.courtId  = null;
+            updateDurationToggle();
+            renderCourts();
+            loadAvailability();
+            updateCta();
           });
-      });
-
-      /* ---- Toast ---- */
-      function showToast(msg){
-        toast.textContent=msg; toast.classList.add('show');
-        setTimeout(function(){toast.classList.remove('show');},3000);
+        });
       }
 
-      /* ---- Init ---- */
+      // ── Orari ─────────────────────────────────────────────────────────
+      function renderTimes(loading){
+        var root = document.getElementById('pzPbTimes');
+        if (loading){ root.innerHTML = '<div class="pz-pb-loading">Carico disponibilità…</div>'; return; }
+        if (!state.slots){ root.innerHTML = '<div class="pz-pb-loading" style="color:#C5C9D2">Seleziona prima la data</div>'; return; }
+        root.innerHTML = '';
+        Object.keys(state.slots).forEach(function(t){
+          var info = state.slots[t];
+          var el = document.createElement('button');
+          el.type = 'button';
+          el.className = 'pz-pb-time'
+            + (!info.available ? ' is-disabled' : '')
+            + (state.time === t && info.available ? ' is-active' : '');
+          el.disabled = !info.available;
+          el.setAttribute('data-time', t);
+          el.textContent = t;
+          root.appendChild(el);
+        });
+      }
+
+      // ── Campi ─────────────────────────────────────────────────────────
+      function renderCourts(){
+        var btns = document.querySelectorAll('.pz-pb-court');
+        var availableForSlot = null;
+        if (state.time && state.slots && state.slots[state.time]){
+          availableForSlot = state.slots[state.time].courts;
+        }
+        btns.forEach(function(b){
+          var id = parseInt(b.getAttribute('data-id'), 10);
+          b.classList.remove('is-active','is-disabled');
+          if (availableForSlot && availableForSlot.indexOf(id) === -1) b.classList.add('is-disabled');
+          if (state.courtId === id) b.classList.add('is-active');
+          b.onclick = function(){
+            if (b.classList.contains('is-disabled')) return;
+            if (!state.time){ flashError('Scegli prima un orario'); return; }
+            state.courtId = id;
+            renderCourts();
+            updateCta();
+          };
+        });
+      }
+
+      // ── Riepilogo + CTA ───────────────────────────────────────────────
+      function updateCta(){
+        var ready = state.dateIso && state.time && state.courtId;
+        document.getElementById('pzPbCta').disabled = !ready;
+        var sum = document.getElementById('pzPbSummary');
+        if (!ready){ sum.classList.remove('is-visible'); return; }
+
+        var d = DATES.find(function(x){ return x.iso === state.dateIso; });
+        var sid = -1;
+        Object.keys(PZ.services).forEach(function(k){
+          if (PZ.services[k] === state.duration) sid = parseInt(k,10);
+        });
+        var price = PZ.prices[sid] || 0;
+        var hh = parseInt(state.time.split(':')[0], 10);
+        var mm = parseInt(state.time.split(':')[1], 10);
+        var endMin = hh*60 + mm + state.duration;
+        var endStr = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'0');
+
+        document.getElementById('pzPbSummaryText').textContent =
+          (d ? d.dow + ' ' + d.day + ' ' + d.monthL : '') + ' · ' + state.time + '–' + endStr + ' · ' + (PZ.courts[state.courtId] || '');
+        document.getElementById('pzPbSummaryPrice').textContent =
+          '€' + price.toFixed(2).replace('.', ',');
+        sum.classList.add('is-visible');
+      }
+
+      // ── Disponibilità AJAX ────────────────────────────────────────────
+      var availXhr;
+      function loadAvailability(){
+        if (!state.dateIso){ state.slots = null; renderTimes(false); return; }
+        renderTimes(true);
+        if (availXhr) availXhr.abort();
+        availXhr = new XMLHttpRequest();
+        availXhr.open('POST', PZ.ajaxUrl, true);
+        availXhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        availXhr.onload = function(){
+          try {
+            var res = JSON.parse(availXhr.responseText);
+            if (res && res.success){ state.slots = res.data.slots; renderTimes(false); renderCourts(); }
+            else { flashError(res && res.data ? res.data : 'Errore disponibilità'); state.slots = null; renderTimes(false); }
+          } catch(e){ flashError('Errore di connessione'); state.slots = null; renderTimes(false); }
+        };
+        availXhr.send('action=pz_private_availability&nonce=' + encodeURIComponent(PZ.nonce)
+          + '&date=' + encodeURIComponent(state.dateIso)
+          + '&duration=' + state.duration);
+      }
+
+      // ── Submit ────────────────────────────────────────────────────────
+      document.getElementById('pzPbCta').addEventListener('click', function(){
+        var btn = this;
+        if (btn.disabled) return;
+        btn.disabled = true;
+        btn.textContent = 'Prenotazione in corso…';
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', PZ.ajaxUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function(){
+          try {
+            var res = JSON.parse(xhr.responseText);
+            if (res && res.success){ showSuccess(res.data); }
+            else { flashError((res && res.data) ? res.data : 'Errore prenotazione'); btn.disabled = false; btn.textContent = 'Prenota'; }
+          } catch(e){ flashError('Errore di connessione'); btn.disabled = false; btn.textContent = 'Prenota'; }
+        };
+        xhr.onerror = function(){ flashError('Errore di rete'); btn.disabled = false; btn.textContent = 'Prenota'; };
+        xhr.send('action=pz_private_book'
+          + '&nonce='    + encodeURIComponent(PZ.nonce)
+          + '&date='     + encodeURIComponent(state.dateIso)
+          + '&time='     + encodeURIComponent(state.time)
+          + '&duration=' + state.duration
+          + '&court_id=' + state.courtId);
+      });
+
+      // ── Successo ──────────────────────────────────────────────────────
+      function showSuccess(data){
+        var d = DATES.find(function(x){ return x.iso === state.dateIso; });
+        var hh = parseInt(state.time.split(':')[0], 10);
+        var mm = parseInt(state.time.split(':')[1], 10);
+        var endMin = hh*60 + mm + state.duration;
+        var endStr = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'0');
+
+        document.getElementById('pzPbSuccessDetail').innerHTML =
+          (d ? d.dow + ' ' + d.day + ' ' + d.monthL : '') +
+          '<br>' + state.time + '–' + endStr +
+          '<br>' + (PZ.courts[state.courtId] || '') +
+          '<br><strong>€' + (data.price || 0).toFixed(2).replace('.', ',') + '</strong>';
+        document.getElementById('pzPbSuccess').classList.add('is-open');
+      }
+      document.getElementById('pzPbSuccessBtn').addEventListener('click', function(){ location.reload(); });
+
+      // ── Errori ────────────────────────────────────────────────────────
+      var errTimer;
+      function flashError(msg){
+        var el = document.getElementById('pzPbError');
+        el.textContent = msg;
+        el.classList.add('is-visible');
+        clearTimeout(errTimer);
+        errTimer = setTimeout(function(){ el.classList.remove('is-visible'); }, 4500);
+      }
+
+      // ── Event delegation orari ────────────────────────────────────────
+      document.getElementById('pzPbTimes').addEventListener('click', function(e){
+        var btn = e.target.closest('.pz-pb-time');
+        if (!btn) return;
+        if (btn.disabled || btn.classList.contains('is-disabled')) return;
+        var t = btn.getAttribute('data-time');
+        if (!t || !state.slots || !state.slots[t]) return;
+        state.time = t;
+        var info = state.slots[t];
+        if (state.courtId && info.courts.indexOf(state.courtId) === -1) state.courtId = null;
+        updateDurationToggle();
+        renderTimes(false);
+        renderCourts();
+        updateCta();
+      });
+
+      // ── Init ──────────────────────────────────────────────────────────
+      state.dateIso = DATES[0].iso;
+      renderDates();
+      renderDuration();
       updateDurationToggle();
       renderCourts();
       loadAvailability();
@@ -515,12 +679,12 @@ function pz_pb_ajax_availability() {
         ];
     }
 
-    $weekday   = (int)date('N', strtotime($date));
-    $is_wday   = ($weekday >= 1 && $weekday <= 5);
+    $weekday    = (int)date('N', strtotime($date));
+    $is_wday    = ($weekday >= 1 && $weekday <= 5);
     $is_weekend = ($weekday >= 6);
-    $is_today  = ($date === (new DateTime('now', $tz_local))->format('Y-m-d'));
-    $now_ts    = time();
-    $slots     = [];
+    $is_today   = ($date === (new DateTime('now', $tz_local))->format('Y-m-d'));
+    $now_ts     = time();
+    $slots      = [];
 
     for ($h = PZ_PB_OPEN_HOUR; $h < PZ_PB_CLOSE_HOUR; $h++) {
         foreach ([0, 30] as $m) {
@@ -669,8 +833,11 @@ function pz_pb_ajax_book() {
     error_log('PZ Private Booking: created apt #' . $apt_id . ' for user ' . $email);
 
     wp_send_json_success([
-        'message'  => 'Prenotazione confermata',
-        'apt_id'   => $apt_id,
-        'redirect' => home_url('/app/prenotazioni/'),
+        'message'        => 'Prenotazione confermata!',
+        'appointment_id' => $apt_id,
+        'booking_start'  => $booking_start,
+        'court_name'     => $courts[$court_id],
+        'price'          => $price,
+        'payment'        => 'onsite',
     ]);
 }
