@@ -94,7 +94,7 @@ function pz_pb_render($atts) {
 
       max-width:480px;
       margin:0 auto;
-      padding:0 0 160px !important;
+      padding:12px 18px 160px !important;
       font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
       color:var(--pz-ink);
       -webkit-font-smoothing:antialiased;
@@ -341,7 +341,7 @@ function pz_pb_render($atts) {
         slots:    null,
       };
 
-      // ── Date ──────────────────────────────────────────────────────────
+      // ── Date ─────────────────────────────────────────────────────────────
       function buildDates(){
         var arr = [], now = new Date();
         for (var i = 0; i < PZ.daysAhead; i++){
@@ -383,7 +383,7 @@ function pz_pb_render($atts) {
         });
       }
 
-      // ── Durata ────────────────────────────────────────────────────────
+      // ── Durata ─────────────────────────────────────────────────────────────
       function is60MinAllowed(){
         if (!state.dateIso) return true;
         var d = new Date(state.dateIso + 'T12:00:00');
@@ -436,7 +436,7 @@ function pz_pb_render($atts) {
         });
       }
 
-      // ── Orari ─────────────────────────────────────────────────────────
+      // ── Orari ─────────────────────────────────────────────────────────────
       function renderTimes(loading){
         var root = document.getElementById('pzPbTimes');
         if (loading){ root.innerHTML = '<div class="pz-pb-loading">Carico disponibilità…</div>'; return; }
@@ -456,7 +456,7 @@ function pz_pb_render($atts) {
         });
       }
 
-      // ── Campi ─────────────────────────────────────────────────────────
+      // ── Campi ─────────────────────────────────────────────────────────────
       function renderCourts(){
         var btns = document.querySelectorAll('.pz-pb-court');
         var availableForSlot = null;
@@ -478,7 +478,7 @@ function pz_pb_render($atts) {
         });
       }
 
-      // ── Riepilogo + CTA ───────────────────────────────────────────────
+      // ── Riepilogo + CTA ─────────────────────────────────────────────────────
       function updateCta(){
         var ready = state.dateIso && state.time && state.courtId;
         document.getElementById('pzPbCta').disabled = !ready;
@@ -503,7 +503,7 @@ function pz_pb_render($atts) {
         sum.classList.add('is-visible');
       }
 
-      // ── Disponibilità AJAX ────────────────────────────────────────────
+      // ── Disponibilità AJAX ────────────────────────────────────────────────────
       var availXhr;
       function loadAvailability(){
         if (!state.dateIso){ state.slots = null; renderTimes(false); return; }
@@ -524,7 +524,7 @@ function pz_pb_render($atts) {
           + '&duration=' + state.duration);
       }
 
-      // ── Submit ────────────────────────────────────────────────────────
+      // ── Submit ─────────────────────────────────────────────────────────────
       document.getElementById('pzPbCta').addEventListener('click', function(){
         var btn = this;
         if (btn.disabled) return;
@@ -550,7 +550,7 @@ function pz_pb_render($atts) {
           + '&court_id=' + state.courtId);
       });
 
-      // ── Successo ──────────────────────────────────────────────────────
+      // ── Successo ─────────────────────────────────────────────────────────────
       function showSuccess(data){
         var d = DATES.find(function(x){ return x.iso === state.dateIso; });
         var hh = parseInt(state.time.split(':')[0], 10);
@@ -567,7 +567,7 @@ function pz_pb_render($atts) {
       }
       document.getElementById('pzPbSuccessBtn').addEventListener('click', function(){ location.reload(); });
 
-      // ── Errori ────────────────────────────────────────────────────────
+      // ── Errori ─────────────────────────────────────────────────────────────
       var errTimer;
       function flashError(msg){
         var el = document.getElementById('pzPbError');
@@ -577,7 +577,7 @@ function pz_pb_render($atts) {
         errTimer = setTimeout(function(){ el.classList.remove('is-visible'); }, 4500);
       }
 
-      // ── Event delegation orari ────────────────────────────────────────
+      // ── Event delegation orari ──────────────────────────────────────────────
       document.getElementById('pzPbTimes').addEventListener('click', function(e){
         var btn = e.target.closest('.pz-pb-time');
         if (!btn) return;
@@ -593,7 +593,7 @@ function pz_pb_render($atts) {
         updateCta();
       });
 
-      // ── Init ──────────────────────────────────────────────────────────
+      // ── Init ─────────────────────────────────────────────────────────────
       state.dateIso = DATES[0].iso;
       renderDates();
       renderDuration();
