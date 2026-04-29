@@ -43,32 +43,7 @@ function pz_wz_render($atts) {
     #pzWzWrap,#pzWzWrap *{box-sizing:border-box !important;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif !important;}
     #pzWzWrap{max-width:480px !important;margin:0 auto !important;padding:0 0 160px !important;color:#161B2E !important;background:transparent !important;}
 
-    /* Header */
-    .pz-wz-header{display:flex !important;align-items:center !important;position:relative !important;min-height:44px !important;margin-bottom:14px !important;}
-    .pz-wz-back{
-      width:44px !important;height:44px !important;background:#FFFFFF !important;
-      border:1.5px solid #D9DCE3 !important;border-radius:50% !important;
-      display:flex !important;align-items:center !important;justify-content:center !important;
-      cursor:pointer !important;box-shadow:none !important;padding:0 !important;
-      flex-shrink:0 !important;position:relative !important;z-index:1 !important;
-      transition:background .15s ease,border-color .15s ease !important;
-    }
-    .pz-wz-back svg{stroke:#8B92A5 !important;fill:none !important;width:18px !important;height:18px !important;}
-    .pz-wz-back:hover{background:#F4F5F8 !important;border-color:#8B92A5 !important;}
-    .pz-wz-back.is-hidden{visibility:hidden !important;pointer-events:none !important;}
-    .pz-wz-title{
-      position:absolute !important;left:0 !important;right:0 !important;
-      font-size:19px !important;font-weight:700 !important;letter-spacing:-0.02em !important;
-      text-align:center !important;pointer-events:none !important;margin:0 !important;
-      color:#161B2E !important;background:transparent !important;text-transform:none !important;
-    }
-
-    /* Subtitle */
-    .pz-wz-sub{
-      font-size:14px !important;color:#8B92A5 !important;line-height:1.5 !important;
-      margin:0 0 22px !important;padding:0 !important;
-      background:transparent !important;text-transform:none !important;
-    }
+    /* → header, back, title, sub: vedi pz-global.php (.pz-g-*) */
 
     /* Card step */
     .pz-wz-card{
@@ -125,13 +100,13 @@ function pz_wz_render($atts) {
 
     <div id="pzWzWrap">
 
-      <div class="pz-wz-header">
-        <button class="pz-wz-back is-hidden" type="button" id="pzWzBack" aria-label="Indietro">
+      <div class="pz-g-header">
+        <button class="pz-g-back is-hidden" type="button" id="pzWzBack" aria-label="Indietro">
           <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <div class="pz-wz-title" id="pzWzTitle">Cosa vuoi prenotare?</div>
+        <div class="pz-g-title" id="pzWzTitle">Cosa vuoi prenotare?</div>
       </div>
-      <p class="pz-wz-sub" id="pzWzSubtitle">Scegli il tipo di prenotazione per iniziare.</p>
+      <p class="pz-g-sub" id="pzWzSubtitle">Scegli il tipo di prenotazione per iniziare.</p>
 
       <!-- STEP 1 -->
       <div class="pz-wz-card" id="pzWzStep1">
