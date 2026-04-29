@@ -643,7 +643,7 @@ add_shortcode('pzlobby', function($atts) {
                                 Partecipa
                             </button>
                         <?php else: ?>
-                            <a href="<?php echo esc_url(home_url('/inizio/login/')); ?>" class="pz-lb-btn-login">Accedi</a>
+                           <a href="<?php echo esc_url(pz_app_url('login/')); ?>" class="pz-lb-btn-login">Accedi</a>
                         <?php endif; ?>
                     </div>
                 </div>
