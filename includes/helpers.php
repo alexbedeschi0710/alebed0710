@@ -194,7 +194,7 @@ add_shortcode('pz_debug_avatar', function() {
 /* ============================================================
  *  LOGIN WALL
  * ============================================================ */
-function pz_render_login_wall( $icon = '', $title = 'Accesso richiesto', $subtitle = 'Effettua il login per continuare.', $login_url = '/inizio/login/' ) {
+function pz_render_login_wall( $icon = '', $title = 'Accesso richiesto', $subtitle = 'Effettua il login per continuare.', $login_url = 'login/' ) {
     $url          = esc_url( pz_app_url( ltrim( $login_url, '/' ) ) );
     $url_register = esc_url( pz_app_url( 'login/#register' ) );
     ob_start();
