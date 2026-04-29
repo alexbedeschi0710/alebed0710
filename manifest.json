@@ -2,20 +2,20 @@
   "name": "PadelZero",
   "short_name": "PadelZero",
   "description": "Prenota le tue partite di padel",
-  "start_url": "/inizio/",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1FB856",
   "theme_color": "#1FB856",
   "icons": [
     {
-      "src": "https://padelzero.it/wp-content/uploads/2026/04/Icona-Padel-zero.png",
+      "src": "https://padelzero.it/wp-content/uploads/2026/04/192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://padelzero.it/wp-content/uploads/2026/04/Icona-Padel-zero.png",
+      "src": "https://padelzero.it/wp-content/uploads/2026/04/512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
