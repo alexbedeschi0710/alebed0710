@@ -62,6 +62,10 @@ function pz_ur_render($is_overlay = true) {
         'nonce'   => wp_create_nonce('pz_user_rating'),
     ];
 
+    if (!$is_overlay) {
+        pz_global_styles();
+    }
+
     ob_start();
     ?>
 
@@ -105,32 +109,7 @@ function pz_ur_render($is_overlay = true) {
         to{opacity:1;transform:translateY(0)}
     }
 
-    /* Header pagina (solo embed) */
-    .pz-ur-header{
-        display:flex !important;align-items:center !important;
-        position:relative !important;min-height:44px !important;margin-bottom:6px !important;
-    }
-    .pz-ur-back{
-        width:44px !important;height:44px !important;background:#FFFFFF !important;
-        border:1.5px solid #D9DCE3 !important;border-radius:50% !important;
-        display:flex !important;align-items:center !important;justify-content:center !important;
-        cursor:pointer !important;padding:0 !important;flex-shrink:0 !important;
-        position:relative !important;z-index:1 !important;text-decoration:none !important;
-        transition:background .15s ease,border-color .15s ease !important;
-    }
-    .pz-ur-back svg{stroke:#8B92A5 !important;fill:none !important;width:18px !important;height:18px !important;}
-    .pz-ur-back:hover{background:#F4F5F8 !important;border-color:#8B92A5 !important;}
-    .pz-ur-page-title{
-        position:absolute !important;left:0 !important;right:0 !important;
-        font-size:19px !important;font-weight:700 !important;letter-spacing:-0.02em !important;
-        text-align:center !important;pointer-events:none !important;margin:0 !important;
-        color:#161B2E !important;background:transparent !important;text-transform:none !important;
-    }
-    .pz-ur-page-sub{
-        font-size:14px !important;color:#8B92A5 !important;line-height:1.5 !important;
-        margin:0 0 24px !important;padding:0 !important;
-        background:transparent !important;text-transform:none !important;
-    }
+    /* → header, back, title, sub: vedi pz-global.php (.pz-g-*) */
 
     /* Icona modale */
     .pz-ur-icon{
@@ -283,14 +262,14 @@ function pz_ur_render($is_overlay = true) {
 
     <div id="pzUrWrap">
 
-        <!-- Header -->
+        <!-- HEADER -->
         <div class="pz-g-header">
             <a href="javascript:history.back()" class="pz-g-back" aria-label="Indietro">
                 <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </a>
-            <p class="pz-ur-page-title">Il mio livello</p>
+            <p class="pz-g-title">Il mio livello</p>
         </div>
-        <p class="pz-ur-page-sub">Scegli la fascia che ti rappresenta meglio.<br>Serve per trovare le partite giuste per te.</p>
+        <p class="pz-g-sub">Scegli la fascia che ti rappresenta meglio.<br>Serve per trovare le partite giuste per te.</p>
 
         <?php
         // Badge livello attuale se già impostato
