@@ -50,6 +50,7 @@ function pz_global_styles() {
   position: relative !important;
   min-height: 44px !important;
   margin-bottom: 14px !important;
+  padding: 0 18px !important;
 }
 
 /* ============================================================
@@ -114,7 +115,7 @@ function pz_global_styles() {
   color: #8B92A5 !important;
   line-height: 1.5 !important;
   margin: 0 0 22px !important;
-  padding: 0 !important;
+  padding: 0 18px !important;
   background: transparent !important;
   text-transform: none !important;
   text-align: center !important;
