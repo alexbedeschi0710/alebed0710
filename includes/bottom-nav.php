@@ -20,9 +20,15 @@ function pz_nav_routes() {
 }
 
 /* ============================================================
- *  HELPER AVATAR — legge Simple Local Avatars, poi fallback
+ *  HELPER AVATAR
+ *  Priorità: 1) pz_avatar (custom upload), 2) simple_local_avatar, 3) Gravatar
  * ============================================================ */
 function pz_get_user_avatar_url($user_id, $size = 64) {
+    // 1. Avatar caricato dal modulo account
+    $pz = get_user_meta($user_id, 'pz_avatar', true);
+    if ($pz && is_string($pz)) return $pz;
+
+    // 2. Simple Local Avatars plugin
     $meta = get_user_meta($user_id, 'simple_local_avatar', true);
     if (!empty($meta) && is_array($meta)) {
         if (!empty($meta[$size])) return $meta[$size];
@@ -38,6 +44,8 @@ function pz_get_user_avatar_url($user_id, $size = 64) {
         $first = reset($meta);
         if ($first && is_string($first)) return $first;
     }
+
+    // 3. Gravatar / default WP
     return get_avatar_url($user_id, ['size' => $size, 'default' => 'mp']);
 }
 
