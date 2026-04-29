@@ -20,9 +20,12 @@ add_shortcode('pz_wizard', 'pz_wz_render');
 function pz_wz_render($atts) {
 
     if (!is_user_logged_in()) {
-        return '<div class="pz-app"><div class="pz-login-wall">'
-             . 'Per prenotare devi <a href="' . esc_url(wp_login_url(get_permalink())) . '">accedere</a>.'
-             . '</div></div>';
+        return pz_render_login_wall(
+            '🎾',
+            'Accedi per prenotare',
+            'Per prenotare una partita o una lezione devi prima effettuare il login.',
+            '/inizio/login/'
+        );
     }
 
     if (function_exists('pz_ensure_amelia_customer')) {
@@ -252,4 +255,3 @@ function pz_wz_render($atts) {
     <?php
     return ob_get_clean();
 }
-
