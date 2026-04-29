@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) exit;
  *  HEAD — manifest + meta PWA
  * ============================================================ */
 add_action('wp_head', function() {
-    $icon = 'https://padelzero.it/wp-content/uploads/2026/04/Icona-Padel-zero.png';
+    $icon = 'https://padelzero.it/wp-content/uploads/2026/04/512x512.png';
     ?>
     <!-- PWA PadelZero -->
     <link rel="manifest" href="<?php echo esc_url(home_url('/manifest.json')); ?>">
