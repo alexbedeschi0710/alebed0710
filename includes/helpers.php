@@ -78,7 +78,7 @@ function pz_get_all_levels() {
   ];
 }
 
-/** Rating dell'utente (1.0 – 7.0). 0 se non impostato. */
+/** Rating dell'utente (1.0 - 7.0). 0 se non impostato. */
 function pz_get_user_rating($user_id = null) {
   if (!$user_id) $user_id = get_current_user_id();
   if (!$user_id) return 0.0;
@@ -86,7 +86,7 @@ function pz_get_user_rating($user_id = null) {
   return $r ? (float)$r : 0.0;
 }
 
-/** True se l'utente ha già auto-dichiarato il proprio livello */
+/** True se l'utente ha gia auto-dichiarato il proprio livello */
 function pz_user_has_rating($user_id = null) {
   return pz_get_user_rating($user_id) > 0;
 }
@@ -102,7 +102,7 @@ function pz_get_user_level_key($user_id = null) {
 }
 
 /**
- * Verifica se l'utente è "in range" rispetto a una partita.
+ * Verifica se l'utente e "in range" rispetto a una partita.
  * @return bool|null   true=in range, false=fuori, null=rating sconosciuto
  */
 function pz_user_matches_level($user_id, $service_id) {
@@ -149,34 +149,63 @@ add_shortcode('pz_debug_nav', function() {
 
 
 /* ============================================================
- *  LOGIN WALL
- *  Schermata "accesso richiesto" coerente con il design system.
- *  Usata da tutti gli shortcode che richiedono autenticazione.
+ *  DEBUG AVATAR — shortcode temporaneo [pz_debug_avatar]
+ *  Metti [pz_debug_avatar] su una pagina, caricala da loggato
+ *  e dimmi cosa vedi. Da rimuovere dopo il debug.
  * ============================================================ */
+add_shortcode('pz_debug_avatar', function() {
+    if (!is_user_logged_in()) return '<p>Non loggato</p>';
+    $uid = get_current_user_id();
 
-/**
- * @param string $icon      Emoji icona — passa '' per nasconderla
- * @param string $title     Titolo
- * @param string $subtitle  Testo descrittivo
- * @param string $login_url Path pagina login (default: /inizio/login/)
- */
+    // Tutti i meta avatar comuni
+    $sla        = get_user_meta($uid, 'simple_local_avatar', true);
+    $wpua       = get_user_meta($uid, 'wp_user_avatar', true);
+    $profile_pic= get_user_meta($uid, 'profile_photo', true);
+    $av_url     = get_avatar_url($uid, ['size' => 64]);
+
+    // Tutti i meta dell'utente (per trovare la chiave giusta)
+    global $wpdb;
+    $all_meta = $wpdb->get_results(
+        $wpdb->prepare("SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d ORDER BY meta_key ASC", $uid)
+    );
+
+    ob_start();
+    echo '<div style="font-family:monospace;font-size:13px;background:#f4f4f4;padding:20px;border-radius:8px;max-width:700px">';
+    echo '<h3 style="margin:0 0 12px">Debug Avatar — User #' . $uid . '</h3>';
+    echo '<p><strong>get_avatar_url():</strong> <a href="' . esc_url($av_url) . '" target="_blank">' . esc_html($av_url) . '</a></p>';
+    echo '<p><strong>Anteprima get_avatar_url:</strong><br><img src="' . esc_url($av_url) . '" style="width:64px;height:64px;border-radius:50%;margin-top:6px"></p>';
+    echo '<hr style="margin:12px 0">';
+    echo '<p><strong>simple_local_avatar meta:</strong></p><pre>' . esc_html(print_r($sla, true)) . '</pre>';
+    echo '<p><strong>wp_user_avatar meta:</strong> ' . esc_html($wpua ?: '(vuoto)') . '</p>';
+    echo '<p><strong>profile_photo meta:</strong> ' . esc_html($profile_pic ?: '(vuoto)') . '</p>';
+    echo '<hr style="margin:12px 0">';
+    echo '<p><strong>Tutti i meta_key con "avatar" o "photo" o "picture":</strong></p><ul>';
+    foreach ($all_meta as $row) {
+        $k = strtolower($row->meta_key);
+        if (strpos($k, 'avatar') !== false || strpos($k, 'photo') !== false || strpos($k, 'picture') !== false || strpos($k, 'image') !== false) {
+            echo '<li><strong>' . esc_html($row->meta_key) . '</strong>: ' . esc_html(substr($row->meta_value, 0, 200)) . '</li>';
+        }
+    }
+    echo '</ul></div>';
+    return ob_get_clean();
+});
+
+
+/* ============================================================
+ *  LOGIN WALL
+ * ============================================================ */
 function pz_render_login_wall( $icon = '', $title = 'Accesso richiesto', $subtitle = 'Effettua il login per continuare.', $login_url = '/inizio/login/' ) {
     $url          = esc_url( pz_app_url( ltrim( $login_url, '/' ) ) );
     $url_register = esc_url( pz_app_url( 'login/#register' ) );
     ob_start();
     ?>
     <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px 48px;text-align:center;min-height:320px">
-
         <?php if ( $icon !== '' ): ?>
         <div style="width:72px;height:72px;background:#E8F8EE;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px"><?php echo $icon; ?></div>
         <?php endif; ?>
-
         <h2 style="font-size:28px;font-weight:800;color:#161B2E;margin:0 0 10px;letter-spacing:-0.02em"><?php echo esc_html( $title ); ?></h2>
-
         <p style="font-size:15px;color:#8B92A5;margin:0 0 32px;max-width:300px;line-height:1.6"><?php echo esc_html( $subtitle ); ?></p>
-
         <a href="<?php echo $url; ?>" style="display:inline-block;background:#1FB856;color:#fff !important;font-size:15px;font-weight:700;text-decoration:none !important;padding:14px 40px;border-radius:12px;letter-spacing:0.3px">Accedi</a>
-
         <p style="margin:20px 0 0;font-size:13px;color:#8B92A5">
             Non hai un account? <a href="<?php echo $url_register; ?>" style="color:#1FB856;font-weight:600;text-decoration:none">Registrati</a>
         </p>
@@ -187,10 +216,6 @@ function pz_render_login_wall( $icon = '', $title = 'Accesso richiesto', $subtit
 
 /* ============================================================
  *  APP URL HELPER
- *  Costruisce URL assoluti relativi a PZ_APP_BASE.
- *  Uso: pz_app_url()             → https://sito.it/app/
- *       pz_app_url('login/')     → https://sito.it/app/login/
- *       pz_app_url('borsellino/')→ https://sito.it/app/borsellino/
  * ============================================================ */
 function pz_app_url( $path = '' ) {
     $base = defined('PZ_APP_BASE') ? PZ_APP_BASE : '/app/';
