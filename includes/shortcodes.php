@@ -15,7 +15,7 @@ add_shortcode('pz_wallet_balance', function() {
             '💰',
             'Il tuo borsellino',
             'Accedi per visualizzare il tuo saldo e la cronologia dei movimenti.',
-            '/inizio/login/'
+            '/app/login/'
         );
     }
 
