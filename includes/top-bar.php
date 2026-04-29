@@ -53,11 +53,9 @@ function pz_top_bar_render( $atts = [] ) {
     if ( $user->last_name )  $initials .= mb_strtoupper( mb_substr( $user->last_name,  0, 1 ) );
     if ( ! $initials )       $initials  = mb_strtoupper( mb_substr( $user->display_name, 0, 2 ) );
 
-    // Usa pz_get_user_avatar_url per leggere pz_avatar come prima priorità
     $avatar_url = pz_get_user_avatar_url( $user->ID, 64 );
     $has_photo  = $avatar_url && strpos( $avatar_url, 'gravatar.com/avatar/00000000000000000000000000000000' ) === false;
 
-    // Se è solo il Gravatar di default (mystery person), trattalo come assenza foto
     if ( $has_photo && strpos( $avatar_url, 'd=mp' ) !== false && strpos( $avatar_url, 'gravatar.com' ) !== false ) {
         $has_photo = false;
     }
@@ -74,9 +72,9 @@ function pz_top_bar_render( $atts = [] ) {
         top: 0 !important; left: 0 !important; right: 0 !important;
         width: 100% !important;
         height: 56px !important;
-        background: #FFFFFF !important;
-        border-bottom: 1px solid #ECEEF2 !important;
-        box-shadow: 0 1px 8px -4px rgba(22,27,46,.10) !important;
+        background: #1FB856 !important;
+        border-bottom: none !important;
+        box-shadow: 0 2px 10px -4px rgba(0,0,0,.20) !important;
         z-index: 99 !important;
         box-sizing: border-box !important;
         font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
@@ -102,7 +100,7 @@ function pz_top_bar_render( $atts = [] ) {
         text-decoration: none !important;
     }
     .pz-top-bar-logo img {
-        height: 32px !important;
+        height: 30px !important;
         width: auto !important;
         max-width: 160px !important;
         display: block !important;
@@ -113,8 +111,8 @@ function pz_top_bar_render( $atts = [] ) {
         align-items: center !important;
         justify-content: center !important;
         width: 36px !important; height: 36px !important;
-        background: #FFFFFF !important;
-        border: 1.5px solid #D9DCE3 !important;
+        background: rgba(255,255,255,.20) !important;
+        border: 1.5px solid rgba(255,255,255,.35) !important;
         border-radius: 50% !important;
         cursor: pointer !important;
         text-decoration: none !important;
@@ -122,7 +120,7 @@ function pz_top_bar_render( $atts = [] ) {
     }
     .pz-top-bar-back svg {
         width: 18px !important; height: 18px !important;
-        stroke: #8B92A5 !important; stroke-width: 2 !important;
+        stroke: #FFFFFF !important; stroke-width: 2 !important;
         fill: none !important;
         stroke-linecap: round !important; stroke-linejoin: round !important;
     }
@@ -132,7 +130,7 @@ function pz_top_bar_render( $atts = [] ) {
         transform: translateX(-50%) !important;
         font-size: 17px !important;
         font-weight: 700 !important;
-        color: #161B2E !important;
+        color: #FFFFFF !important;
         letter-spacing: -0.01em !important;
         pointer-events: none !important;
         white-space: nowrap !important;
@@ -153,7 +151,7 @@ function pz_top_bar_render( $atts = [] ) {
     .pz-top-bar-name {
         font-size: 14px !important;
         font-weight: 600 !important;
-        color: #161B2E !important;
+        color: #FFFFFF !important;
         max-width: 90px !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -162,13 +160,13 @@ function pz_top_bar_render( $atts = [] ) {
     .pz-top-bar-avatar {
         width: 32px !important; height: 32px !important;
         border-radius: 50% !important;
-        border: 1.5px solid #D9DCE3 !important;
+        border: 2px solid rgba(255,255,255,.60) !important;
         flex-shrink: 0 !important;
         overflow: hidden !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: #E8F8EE !important;
+        background: rgba(255,255,255,.25) !important;
         box-sizing: border-box !important;
     }
     .pz-top-bar-avatar img {
@@ -181,7 +179,7 @@ function pz_top_bar_render( $atts = [] ) {
     .pz-top-bar-avatar-initials {
         font-size: 12px !important;
         font-weight: 700 !important;
-        color: #1FB856 !important;
+        color: #FFFFFF !important;
         letter-spacing: 0 !important;
         line-height: 1 !important;
     }
@@ -206,10 +204,10 @@ function pz_top_bar_render( $atts = [] ) {
                 <?php else : ?>
                     <a href="<?php echo esc_url( pz_app_url() ); ?>" class="pz-top-bar-logo" aria-label="PadelZero Home">
                         <img
-                            src="https://padelzero.it/wp-content/uploads/2026/04/Padelzero-Logo_1.svg"
+                            src="https://padelzero.it/wp-content/uploads/2026/04/Padelzero-Logo_1.png"
                             alt="PadelZero"
                             width="120"
-                            height="32"
+                            height="30"
                             loading="eager"
                         >
                     </a>
