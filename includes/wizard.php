@@ -21,7 +21,7 @@ function pz_wz_render($atts) {
 
     if (!is_user_logged_in()) {
         return pz_render_login_wall(
-            '🎾',
+            '',
             'Accedi per prenotare',
             'Per prenotare una partita o una lezione devi prima effettuare il login.',
             '/inizio/login/'
