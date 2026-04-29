@@ -1,5 +1,5 @@
 // PadelZero Service Worker v1
-const CACHE = 'pz-v1';
+const CACHE = 'pz-v2';
 
 self.addEventListener('install', function(e) {
     self.skipWaiting();
