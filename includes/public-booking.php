@@ -676,7 +676,7 @@ function pz_cpb_render($atts) {
         }
 
         document.getElementById('pzCpbSuccessBtn').addEventListener('click', function() {
-            window.location.href = '/partite-pubbliche/';
+            window.location.href = '<?php echo esc_js( pz_app_url("partite-pubbliche/") ); ?>';
         });
 
         // ── Errori ────────────────────────────────────────────────────────
